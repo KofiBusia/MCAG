@@ -12,5 +12,9 @@
     <button class="btn" type="submit">Sign in</button>
     <p class="note"><a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a></p>
   </form>
+  <hr>
+  <p class="note">New microcredit enterprise?
+    <a href="{{ url_for('auth.register') }}"><strong>Register your enterprise</strong></a>
+    — accounts are activated after approval by the MCAG platform administrator.</p>
 </div>
 {% endblock %}

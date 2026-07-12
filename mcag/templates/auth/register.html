@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Register your enterprise{% endblock %}
+{% block auth_content %}
+<div class="auth-card" style="max-width:560px">
+  <h1>Register your microcredit enterprise</h1>
+  <p class="note">For registered Ghanaian micro-credit enterprises only.
+    Your account is reviewed and approved by the MCAG platform administrator
+    before you can sign in. Customers do not register — this system is for
+    authorised staff only.</p>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h3>Enterprise details</h3>
+    <label class="field"><span>Registered legal name *</span>
+      <input name="legal_name" value="{{ form.get('legal_name','') }}" required></label>
+    <label class="field"><span>Trading name</span>
+      <input name="trading_name" value="{{ form.get('trading_name','') }}"></label>
+    <label class="field"><span>Business registration number</span>
+      <input name="business_registration_number" value="{{ form.get('business_registration_number','') }}"></label>
+    <label class="field"><span>MCAG membership number (if a member)</span>
+      <input name="mcag_membership_number" value="{{ form.get('mcag_membership_number','') }}"></label>
+    <label class="field"><span>Office address</span>
+      <input name="office_address" value="{{ form.get('office_address','') }}"></label>
+    <label class="field"><span>Digital address</span>
+      <input name="digital_address" value="{{ form.get('digital_address','') }}"></label>
+    <label class="field"><span>Enterprise telephone</span>
+      <input name="phone_primary" value="{{ form.get('phone_primary','') }}"></label>
+    <label class="field"><span>Enterprise email</span>
+      <input type="email" name="institution_email" value="{{ form.get('institution_email','') }}"></label>
+
+    <h3>Administrator account</h3>
+    <label class="field"><span>Full name *</span>
+      <input name="admin_name" value="{{ form.get('admin_name','') }}" required></label>
+    <label class="field"><span>Email (your sign-in) *</span>
+      <input type="email" name="admin_email" value="{{ form.get('admin_email','') }}" required></label>
+    <label class="field"><span>Telephone</span>
+      <input name="admin_phone" value="{{ form.get('admin_phone','') }}"></label>
+    <label class="field"><span>Password *</span>
+      <input type="password" name="password" required></label>
+    <label class="field"><span>Confirm password *</span>
+      <input type="password" name="confirm_password" required></label>
+    <p class="note">At least 10 characters with upper case, lower case, a digit
+      and a special character.</p>
+    <label class="field-check">
+      <input type="checkbox" name="declaration" value="1" required>
+      <span>I confirm this enterprise is a registered microcredit business in
+        Ghana and a member of (or applicant to) the Micro-Credit Association
+        Ghana, and that I am authorised to open this account.</span>
+    </label>
+    <p><button class="btn" type="submit">Submit registration for approval</button></p>
+  </form>
+  <p class="note"><a href="{{ url_for('auth.login') }}">← Back to sign in</a></p>
+</div>
+{% endblock %}
