@@ -1,0 +1,27 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header">
+  <h1>{{ institution.legal_name }}</h1>
+  <p class="muted">{{ institution.office_address or '' }}</p>
+</div>
+<h2 class="center">CUSTOMER LOAN STATEMENT — {{ loan.loan_number }}</h2>
+<p>Customer: {{ loan.customer.full_name }} ({{ loan.customer.customer_number }})<br>
+   Statement date: {{ today|ghdate }} · Status: {{ loan.status }}</p>
+<table class="doc-table">
+  <tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+  {% for e in entries %}
+  <tr>
+    <td>{{ e.entry_date|ghdate }}</td>
+    <td>{{ e.entry_type.replace('_',' ') }}</td>
+    <td>{{ e.description }}</td>
+    <td class="num">{{ e.debit|cedi if e.debit else '' }}</td>
+    <td class="num">{{ e.credit|cedi if e.credit else '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<table class="doc-table">
+  <tr><td>Principal outstanding</td><td class="num">{{ loan.principal_outstanding|cedi }}</td></tr>
+  <tr><td>Interest outstanding</td><td class="num">{{ loan.interest_outstanding|cedi }}</td></tr>
+  <tr><td>Penalties outstanding</td><td class="num">{{ loan.penalties_outstanding|cedi }}</td></tr>
+  <tr><td><strong>Total outstanding</strong></td><td class="num"><strong>{{ loan.total_outstanding|cedi }}</strong></td></tr>
+</table>
+</body></html>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Initiate disbursement — {{ app.application_number }}</h1>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Pre-disbursement checklist</h2>
+    <table>
+      {% for label, ok in checklist %}
+      <tr><td>{{ label }}</td>
+          <td>{% if ok %}<span class="badge badge-success">complete</span>
+              {% else %}<span class="badge badge-danger">outstanding</span>{% endif %}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Payment details</h2>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Disbursement date</span><input type="date" name="disbursement_date"></label>
+      <label class="field"><span>Method</span>
+        <select name="method">{% for v, l in methods %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></label>
+      <label class="field"><span>Bank account (if bank transfer)</span>
+        <input name="bank_account" value="{{ app.customer.bank_account_number or '' }}"></label>
+      <label class="field"><span>Mobile money number (if MoMo)</span>
+        <input name="momo_number" value="{{ app.customer.momo_number or '' }}"></label>
+      <label class="field"><span>Cheque details</span><input name="cheque_details"></label>
+      <label class="field"><span>Payment reference</span><input name="payment_reference"></label>
+      <p class="note field-wide">The schedule is regenerated from the locked
+        offer terms anchored to the actual disbursement date. Disbursement
+        requires authorisation by a second officer.</p>
+      <div class="field-wide"><button class="btn" type="submit">Initiate disbursement</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

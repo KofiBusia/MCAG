@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Arrears &amp; portfolio classification (as of {{ portfolio.as_of|ghdate }})</h1>
+<div class="stats">
+  <div class="stat"><div class="label">Gross portfolio</div><div class="value">{{ portfolio.gross_portfolio|cedi }}</div></div>
+  <div class="stat"><div class="label">Performing</div><div class="value">{{ portfolio.performing|cedi }}</div></div>
+  <div class="stat"><div class="label">In arrears</div><div class="value">{{ portfolio.in_arrears|cedi }}</div></div>
+  <div class="stat"><div class="label">PAR ≥ 1 day</div><div class="value">{{ portfolio.par[1].ratio }}%</div></div>
+  <div class="stat"><div class="label">PAR 30</div><div class="value">{{ portfolio.par[30].ratio }}%</div></div>
+  <div class="stat"><div class="label">PAR 60</div><div class="value">{{ portfolio.par[60].ratio }}%</div></div>
+  <div class="stat"><div class="label">PAR 90</div><div class="value">{{ portfolio.par[90].ratio }}%</div></div>
+  <div class="stat"><div class="label">NPL (&gt;90 days)</div><div class="value">{{ portfolio.npl.ratio }}%</div></div>
+  <div class="stat"><div class="label">Provision required</div><div class="value">{{ portfolio.provision_required|cedi }}</div></div>
+  <div class="stat"><div class="label">Written off</div><div class="value">{{ portfolio.written_off.count }}</div></div>
+</div>
+<div class="card">
+  <h2>Classification buckets</h2>
+  <table>
+    <tr><th>Bucket</th><th class="num">Loans</th><th class="num">Principal outstanding</th>
+        <th class="num">Rate %</th><th class="num">Provision</th></tr>
+    {% for key, b in portfolio.buckets.items() %}
+    <tr><td>{{ b.label }}</td><td class="num">{{ b.count }}</td>
+        <td class="num">{{ b.principal|cedi }}</td>
+        <td class="num">{{ b.rate_percent }}</td>
+        <td class="num">{{ b.provision|cedi }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Overdue loans</h2>
+  <table>
+    <tr><th>Loan</th><th>Customer</th><th class="num">Days overdue</th>
+        <th class="num">Outstanding</th><th>Bucket</th><th>Letters</th></tr>
+    {% for d in portfolio.detail if d.days_overdue > 0 %}
+    <tr>
+      <td><a href="{{ url_for('loans.detail', loan_id=d.loan.id) }}">{{ d.loan.loan_number }}</a></td>
+      <td>{{ d.loan.customer.full_name }}</td>
+      <td class="num">{{ d.days_overdue }}</td>
+      <td class="num">{{ d.principal_outstanding|cedi }}</td>
+      <td>{{ d.bucket }}</td>
+      <td>
+        <a href="{{ url_for('arrears.letter_pdf', loan_id=d.loan.id, letter='reminder') }}">Reminder</a> ·
+        <a href="{{ url_for('arrears.letter_pdf', loan_id=d.loan.id, letter='first_demand') }}">Demand</a> ·
+        <a href="{{ url_for('arrears.letter_pdf', loan_id=d.loan.id, letter='final_demand') }}">Final</a> ·
+        <a href="{{ url_for('arrears.letter_pdf', loan_id=d.loan.id, letter='guarantor_demand') }}">Guarantor</a> ·
+        <a href="{{ url_for('arrears.letter_pdf', loan_id=d.loan.id, letter='balance_statement') }}">Balance</a>
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="6" class="note">No overdue loans.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

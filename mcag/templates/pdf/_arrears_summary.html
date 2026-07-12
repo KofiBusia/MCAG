@@ -1,0 +1,8 @@
+<table class="doc-table">
+  <tr><td>Loan number</td><td>{{ loan.loan_number }}</td></tr>
+  <tr><td>Principal outstanding</td><td class="num">{{ loan.principal_outstanding|cedi }}</td></tr>
+  <tr><td>Interest outstanding</td><td class="num">{{ loan.interest_outstanding|cedi }}</td></tr>
+  <tr><td>Penalties outstanding</td><td class="num">{{ loan.penalties_outstanding|cedi }}</td></tr>
+  <tr><td><strong>Total outstanding</strong></td><td class="num"><strong>{{ loan.total_outstanding|cedi }}</strong></td></tr>
+  <tr><td>Days overdue</td><td>{{ loan.days_overdue(today) }}</td></tr>
+</table>

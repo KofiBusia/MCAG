@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Guarantor register</h1>
+{% if current_user.can('create') %}
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Full name *</span><input name="full_name" required></label>
+    <label class="field"><span>Relationship to borrower</span><input name="relationship_to_borrower"></label>
+    <label class="field"><span>Ghana Card</span><input name="ghana_card_number"></label>
+    <label class="field"><span>Ghana Card expiry</span><input type="date" name="ghana_card_expiry_date"></label>
+    <label class="field"><span>Date of birth</span><input type="date" name="date_of_birth"></label>
+    <label class="field"><span>Telephone</span><input name="phone"></label>
+    <label class="field"><span>Residence</span><input name="residence"></label>
+    <label class="field"><span>Occupation</span><input name="occupation"></label>
+    <label class="field"><span>Employer / business</span><input name="employer_or_business"></label>
+    <label class="field"><span>Monthly income (GH¢)</span><input type="number" step="0.01" name="monthly_income"></label>
+    <label class="field"><span>Maximum guaranteed amount (GH¢)</span><input type="number" step="0.01" name="max_guaranteed_amount"></label>
+    <div class="field"><button class="btn" type="submit">Register guarantor</button></div>
+  </form>
+</div>
+{% endif %}
+<table>
+  <tr><th>Name</th><th>Ghana Card</th><th>Phone</th><th class="num">Income</th>
+      <th class="num">Max guarantee</th><th>Active guarantees</th><th>Status</th></tr>
+  {% for g in guarantors %}
+  <tr>
+    <td>{{ g.full_name }}</td><td>{{ g.masked_ghana_card or '—' }}</td>
+    <td>{{ g.phone or '—' }}</td>
+    <td class="num">{{ g.monthly_income|cedi if g.monthly_income else '—' }}</td>
+    <td class="num">{{ g.max_guaranteed_amount|cedi if g.max_guaranteed_amount else '—' }}</td>
+    <td class="num">{{ g.guarantees|selectattr('status', 'equalto', 'active')|list|length }}</td>
+    <td><span class="badge">{{ g.status }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,60 @@
+<div class="doc">
+  <h2 style="text-align:center">{{ institution.legal_name }}</h2>
+  <p style="text-align:center">{{ institution.office_address or '' }}
+    {% if institution.digital_address %}({{ institution.digital_address }}){% endif %}<br>
+    Tel: {{ institution.phone_primary or '' }} · {{ institution.email or '' }}</p>
+  <p>{{ offer.generated_at|ghdate if offer.generated_at else '' }}</p>
+  <p><strong>{{ customer.full_name|upper }}</strong><br>
+     {{ customer.residential_location or '' }}</p>
+  <p><strong>OBJECT: OFFER OF LOAN FACILITY (This is neither a Contract nor a
+     commitment to Lend)</strong></p>
+  <p>Dear {{ customer.full_name }},</p>
+  <p>Thank you for your recent {{ app.product.name }} application. After
+    reviewing your information and assessment, we are pleased to offer you a
+    {{ app.product.name }} facility based on the following terms and conditions:</p>
+  <table class="doc-table">
+    <tr><td><strong>AMOUNT FINANCED</strong></td><td>The amount of credit provided to you or on your behalf is {{ calc.gross_amount_financed|cedi }}</td></tr>
+    <tr><td><strong>TENURE</strong></td><td>{{ calc.tenure }} {{ calc.frequency }} instalments{% if calc.grace_periods|int > 0 %} plus {{ calc.grace_periods }} grace period(s){% endif %}</td></tr>
+    <tr><td><strong>ANNUAL PERCENTAGE RATE</strong></td><td>The cost of your credit at an annual rate is {{ calc.apr }}%</td></tr>
+    <tr><td><strong>INTEREST CHARGE</strong></td><td>The amount the credit will cost you is {{ calc.total_interest|cedi }}</td></tr>
+    <tr><td><strong>NUMBER OF PAYMENTS</strong></td><td>{{ calc.number_of_instalments }}</td></tr>
+    <tr><td><strong>AMOUNT OF PAYMENTS</strong></td><td>{{ calc.instalment_amount|cedi }} per instalment (final instalment adjusted for rounding)</td></tr>
+    <tr><td><strong>WHEN PAYMENTS DUE</strong></td><td>{{ calc.frequency|title }}, first due {{ calc.first_due_date }}, last due {{ calc.final_due_date }}</td></tr>
+    <tr><td><strong>TOTAL OF PAYMENTS</strong></td><td>The amount you will have paid after making all payments as scheduled is {{ calc.total_repayment|cedi }}</td></tr>
+    <tr><td><strong>PROCESSING FEES</strong></td><td>Application fee {{ calc.application_fee|cedi }}, processing fee {{ calc.processing_fee|cedi }}, other approved fees {{ calc.other_fees|cedi }} (total {{ calc.total_fees|cedi }})</td></tr>
+    <tr><td><strong>AMOUNT RECEIVED</strong></td><td>The actual amount provided to you at the beginning of the loan is {{ calc.net_amount_received|cedi }}</td></tr>
+    <tr><td><strong>COLLATERAL</strong></td><td>{{ app.proposed_collateral or 'As recorded in the collateral register for this facility.' }}</td></tr>
+    <tr><td><strong>LATE CHARGE</strong></td><td>Late payment penalties apply per the approved product configuration stated in the loan agreement. Penalties apply to the overdue instalment; interest is not charged on penalties.</td></tr>
+    <tr><td><strong>PREPAYMENT</strong></td><td>{{ app.product.early_settlement_terms or 'You may retire this facility early subject to the product early settlement terms.' }}</td></tr>
+    <tr><td><strong>OFFER VALID UNTIL</strong></td><td>{{ offer.offer_expiry_date|ghdate }}</td></tr>
+  </table>
+
+  <h3>REPAYMENT SCHEDULE</h3>
+  <table class="doc-table schedule">
+    <tr><th>#</th><th>Due date</th><th>Opening</th><th>Principal</th><th>Interest</th><th>Total due</th><th>Closing</th></tr>
+    {% for row in calc.instalments %}
+    <tr>
+      <td>{{ row.number }}</td><td>{{ row.due_date }}</td>
+      <td class="num">{{ row.opening_principal|cedi }}</td>
+      <td class="num">{{ row.principal_due|cedi }}</td>
+      <td class="num">{{ row.interest_due|cedi }}</td>
+      <td class="num">{{ row.total_due|cedi }}</td>
+      <td class="num">{{ row.closing_principal|cedi }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <p>Please sign and return to us the acknowledgement hereunder as having
+    accepted our Offer to enable us complete this transaction. Thank you.</p>
+  <p>Sincerely,<br><br>
+    ______________________________<br>
+    {{ institution.manager_name or institution.proprietor_name or '' }}<br>
+    {{ institution.legal_name }}</p>
+  <h3>ACCEPTANCE OF OFFER</h3>
+  <p>I am pleased to accept the offer of {{ app.product.name }} facility of
+    {{ calc.gross_amount_financed|cedi }} given by {{ institution.legal_name }}
+    and the terms and conditions stated in this Offer Letter. Payment will be
+    made as outlined above.</p>
+  <p>BORROWER'S NAME: {{ customer.full_name|upper }}<br><br>
+    Sign: ____________________________ Date: ______________________</p>
+</div>

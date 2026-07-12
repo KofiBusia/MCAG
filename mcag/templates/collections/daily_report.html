@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Daily collection report — {{ report_date|ghdate }}</h1>
+<form method="get" class="inline">
+  <input type="date" name="d" value="{{ report_date }}">
+  <button class="btn btn-sm" type="submit">Change date</button>
+</form>
+<table>
+  <tr><th>Receipt</th><th>Loan</th><th>Customer</th><th class="num">Amount</th><th>Method</th><th>Collector</th><th>Status</th></tr>
+  {% for r in repayments %}
+  <tr>
+    <td>{{ r.receipt_number }}</td><td>{{ r.loan.loan_number }}</td>
+    <td>{{ r.loan.customer.full_name }}</td>
+    <td class="num">{{ r.amount|cedi }}</td><td>{{ r.method }}</td>
+    <td>{{ r.collector.full_name }}</td>
+    <td>{% if r.reversed %}<span class="badge badge-danger">reversed</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  <tr><th colspan="3">Total (excluding reversed)</th><th class="num">{{ total|cedi }}</th><th colspan="3"></th></tr>
+</table>
+{% endblock %}

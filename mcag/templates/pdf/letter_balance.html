@@ -1,0 +1,9 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+{% include "pdf/_letter_head.html" %}
+<h2>STATEMENT OF OUTSTANDING BALANCE</h2>
+<p>The outstanding balance on loan {{ loan.loan_number }} as at
+{{ today|ghdate }} is as follows:</p>
+{% include "pdf/_arrears_summary.html" %}
+<p>This statement is issued for information and reconciliation purposes.</p>
+<p>____________________________<br>{{ institution.legal_name }}</p>
+</body></html>

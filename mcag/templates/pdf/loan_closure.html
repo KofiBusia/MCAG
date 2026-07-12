@@ -1,0 +1,43 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header"><h1>{{ institution.legal_name }}</h1>
+<p class="muted">{{ institution.office_address or '' }}</p></div>
+
+<h2>LOAN CLOSURE LETTER</h2>
+<p>{{ today|ghdate }}</p>
+<p>Dear {{ loan.customer.full_name }},</p>
+<p>We confirm that loan facility <strong>{{ loan.loan_number }}</strong> of
+principal {{ loan.principal|cedi }} has been fully settled and closed on
+{{ loan.closed_at|ghdate if loan.closed_at }}. The balance on the facility is
+<strong>GH¢0.00</strong> (see zero-balance statement below).</p>
+
+<h3>ZERO-BALANCE STATEMENT</h3>
+<table class="doc-table">
+  <tr><td>Principal outstanding</td><td class="num">{{ loan.principal_outstanding|cedi }}</td></tr>
+  <tr><td>Interest outstanding</td><td class="num">{{ loan.interest_outstanding|cedi }}</td></tr>
+  <tr><td>Penalties outstanding</td><td class="num">{{ loan.penalties_outstanding|cedi }}</td></tr>
+</table>
+
+<h3>COLLATERAL RELEASE</h3>
+<p>All collateral pledged in support of this facility is hereby released and
+may be discharged from any registration at the Collateral Registry.</p>
+<table class="doc-table">
+  <tr><th>Type</th><th>Description</th><th>Registry ref.</th></tr>
+  {% for col in loan.application.collaterals %}
+  <tr><td>{{ col.collateral_type.replace('_',' ')|title }}</td>
+      <td>{{ col.description }}</td>
+      <td>{{ col.collateral_registry_reference or '—' }}</td></tr>
+  {% else %}
+  <tr><td colspan="3">No registered collateral on this facility.</td></tr>
+  {% endfor %}
+</table>
+
+<h3>GUARANTOR DISCHARGE NOTICE</h3>
+<p>All guarantors of this facility are discharged from their undertakings with
+effect from the closure date.</p>
+{% for link in loan.application.guarantee_links %}
+<p>Guarantor: {{ link.guarantor.full_name }} — discharged.</p>
+{% endfor %}
+<p><br>____________________________<br>
+{{ institution.manager_name or institution.proprietor_name or '' }}<br>
+{{ institution.legal_name }}</p>
+</body></html>

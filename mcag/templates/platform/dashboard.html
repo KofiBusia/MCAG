@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block page_title %}Platform Administration{% endblock %}
+{% block content %}
+<h1>Platform overview</h1>
+<div class="stats">
+  {% for key, value in stats.items() %}
+  <div class="stat"><div class="label">{{ key.replace('_', ' ')|title }}</div><div class="value">{{ value }}</div></div>
+  {% endfor %}
+</div>
+<div class="card">
+  <h2>Recent authentication events</h2>
+  <table>
+    <tr><th>Time</th><th>Email</th><th>Event</th><th>IP</th></tr>
+    {% for e in recent_logins %}
+    <tr><td>{{ e.occurred_at }}</td><td>{{ e.email_attempted }}</td>
+        <td><span class="badge {% if e.event == 'failed' %}badge-danger{% endif %}">{{ e.event }}</span></td>
+        <td>{{ e.ip_address }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

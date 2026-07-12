@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Institution profile</h1>
+<p class="note">One approved office profile per enterprise. Collection zones
+are field operational areas, not branches.</p>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Registered legal name</span><input name="legal_name" value="{{ inst.legal_name }}" required></label>
+    <label class="field"><span>Trading name</span><input name="trading_name" value="{{ inst.trading_name or '' }}"></label>
+    <label class="field"><span>Business registration number</span><input name="business_registration_number" value="{{ inst.business_registration_number or '' }}"></label>
+    <label class="field"><span>TIN</span><input name="tin" value="{{ inst.tin or '' }}"></label>
+    <label class="field"><span>MCAG membership number</span><input name="mcag_membership_number" value="{{ inst.mcag_membership_number or '' }}"></label>
+    <label class="field"><span>Bank of Ghana licence / regulatory ref.</span><input name="bog_licence_reference" value="{{ inst.bog_licence_reference or '' }}"></label>
+    <label class="field field-wide"><span>Approved office address</span><input name="office_address" value="{{ inst.office_address or '' }}"></label>
+    <label class="field"><span>Digital address</span><input name="digital_address" value="{{ inst.digital_address or '' }}"></label>
+    <label class="field field-wide"><span>Approved geographical area of operation</span><input name="area_of_operation" value="{{ inst.area_of_operation or '' }}"></label>
+    <label class="field"><span>Telephone (primary)</span><input name="phone_primary" value="{{ inst.phone_primary or '' }}"></label>
+    <label class="field"><span>Telephone (secondary)</span><input name="phone_secondary" value="{{ inst.phone_secondary or '' }}"></label>
+    <label class="field"><span>Email</span><input name="email" value="{{ inst.email or '' }}"></label>
+    <label class="field"><span>Proprietor / owners</span><input name="proprietor_name" value="{{ inst.proprietor_name or '' }}"></label>
+    <label class="field"><span>Manager</span><input name="manager_name" value="{{ inst.manager_name or '' }}"></label>
+    <label class="field"><span>Date operations commenced</span><input type="date" name="date_operations_commenced" value="{{ inst.date_operations_commenced or '' }}"></label>
+    <label class="field"><span>Principal bank</span><input name="principal_bank" value="{{ inst.principal_bank or '' }}"></label>
+    <label class="field"><span>Bank account name</span><input name="bank_account_name" value="{{ inst.bank_account_name or '' }}"></label>
+    <label class="field"><span>Bank account number</span><input name="bank_account_number" value="{{ inst.bank_account_number or '' }}"></label>
+    <label class="field"><span>Data Protection Commission registration</span><input name="dpc_registration" value="{{ inst.dpc_registration or '' }}"></label>
+    <label class="field"><span>Credit bureau relationship</span><input name="credit_bureau_relationship" value="{{ inst.credit_bureau_relationship or '' }}"></label>
+    <label class="field"><span>Auditor</span><input name="auditor_name" value="{{ inst.auditor_name or '' }}"></label>
+    <label class="field"><span>Accountant</span><input name="accountant_name" value="{{ inst.accountant_name or '' }}"></label>
+    <label class="field"><span>Regulatory renewal date</span><input type="date" name="regulatory_renewal_date" value="{{ inst.regulatory_renewal_date or '' }}"></label>
+    <label class="field"><span>MCAG renewal date</span><input type="date" name="mcag_renewal_date" value="{{ inst.mcag_renewal_date or '' }}"></label>
+    {% if current_user.can('manage_settings') %}
+    <div class="field-wide"><button class="btn" type="submit">Save profile</button>
+      <a class="btn btn-secondary" href="{{ url_for('institution.settings') }}">Institution settings</a></div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

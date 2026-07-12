@@ -1,0 +1,137 @@
+<div class="doc">
+  <h2 style="text-align:center">LOAN AGREEMENT</h2>
+  <p>This LOAN AGREEMENT is made this <strong>{{ agreement.agreement_date|ghdate }}</strong>
+    between <strong>{{ institution.legal_name }}</strong> (hereinafter referred to
+    as "THE LENDER") whose address is {{ institution.office_address or '—' }}
+    {% if institution.digital_address %}({{ institution.digital_address }}){% endif %}
+    AND <strong>{{ customer.full_name }}</strong> of
+    {{ customer.residential_digital_address or customer.residential_location or '—' }},
+    in the {{ customer.region or '—' }} Region of the Republic of Ghana
+    (referred to as THE BORROWER).</p>
+
+  <p><strong>WHEREAS:</strong> the Borrower desires to obtain from the Lender a
+    loan in the principal amount of {{ calc.gross_amount_financed|cedi }} (the
+    "Loan"); and the Lender desires to grant the Borrower a
+    {{ app.product.name|upper }}. NOW, THEREFORE, the parties agree as follows:</p>
+
+  <h3>1. PROMISE TO PAY</h3>
+  <p>Within {{ calc.tenure }} {{ calc.frequency }} instalments, the Borrower
+    promises to pay to {{ institution.legal_name }} the sum of
+    <strong>{{ calc.total_repayment|cedi }}</strong>. The breakdown is as stated below:</p>
+  <table class="doc-table">
+    <tr><td>Principal Amount</td><td class="num">{{ calc.gross_amount_financed|cedi }}</td></tr>
+    <tr><td>Interest Charge</td><td class="num">{{ calc.total_interest|cedi }}
+      ({{ calc.rate_percent }}% per {{ 'month' if calc.rate_period == 'monthly' else 'annum' }},
+      {{ calc.interest_method.replace('_',' ') }})</td></tr>
+    <tr><td><strong>Total of Payments</strong></td><td class="num"><strong>{{ calc.total_repayment|cedi }}</strong></td></tr>
+  </table>
+
+  <h3>2. TERMS OF REPAYMENT</h3>
+  <p>The BORROWER will repay the Loan Principal and Interest in
+    {{ calc.number_of_instalments }} instalments starting on
+    {{ calc.first_due_date }} and ending on {{ calc.final_due_date }} according
+    to the schedule below:</p>
+  <table class="doc-table schedule">
+    <tr><th>#</th><th>Due date</th><th>Principal</th><th>Interest</th><th>Total due</th></tr>
+    {% for row in calc.instalments %}
+    <tr><td>{{ row.number }}</td><td>{{ row.due_date }}</td>
+        <td class="num">{{ row.principal_due|cedi }}</td>
+        <td class="num">{{ row.interest_due|cedi }}</td>
+        <td class="num">{{ row.total_due|cedi }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <h3>3. EARLY RETIREMENT OF PRINCIPAL</h3>
+  <p>The Borrower shall be at liberty to retire this loan facility before the
+    expiration of its tenor subject to
+    {{ app.product.early_settlement_terms or 'the early settlement terms of the approved loan product' }}.</p>
+
+  <h3>4. PENALTY</h3>
+  <p>In the event the Borrower fails to make payment of an instalment on the
+    agreed due date, the Borrower shall be liable to pay the penalty configured
+    for this product{% if app.product.penalty_rate_percent and app.product.penalty_rate_percent > 0 %}
+    ({{ app.product.penalty_rate_percent }}% per day of the overdue instalment
+    after {{ app.product.penalty_grace_days }} grace day(s)
+    {%- if app.product.penalty_max_percent %}, capped at
+    {{ app.product.penalty_max_percent }}% of the instalment{% endif %}){% endif %}.
+    Penalties apply to the overdue instalment only and interest is not charged
+    on penalties.</p>
+
+  <h3>5. DEFAULT</h3>
+  <p>The Borrower falls into default if the Borrower fails to comply with the
+    terms of payment. In the event of a default, the total amount outstanding
+    on this loan facility inclusive of interest, penalty and other charges
+    shall be due immediately and {{ institution.legal_name }} shall be at
+    liberty to demand payment of same.</p>
+
+  <h3>6. COLLATERAL</h3>
+  <p>{{ app.proposed_collateral or 'The Borrower hypothecates present and future assets of the business and household as security for this loan' }}.
+    Security shall be realised with due regard to the laws of Ghana to defray
+    any amount outstanding on this loan facility.</p>
+
+  <h3>7. RECOVERY</h3>
+  <p>By executing this contract, the Borrower and the Guarantor(s) authorise
+    {{ institution.legal_name }}, its workers, agents and assigns to use all
+    lawful means available, including but not limited to proceedings in court,
+    to recover any amount outstanding on this loan.</p>
+
+  <h3>8. NOTICES AND GOVERNING LAW</h3>
+  <p>Any notice required to be given under this agreement or under any law
+    shall be in writing and shall be delivered at the regular place of business
+    of the Borrower or the Lender, or at the last known residence of the
+    Borrower. The governing law shall be the laws of the Republic of Ghana.</p>
+
+  <h3>9. LIABILITY OF GUARANTOR</h3>
+  <p>The liability of the Guarantor(s) is personal and unlimited.
+    {{ institution.legal_name }}, its workers, agents and assigns can attach
+    the personal property of the Guarantor(s) and proceed against the estate of
+    the Guarantor(s) to settle any amount outstanding on this loan. The Lender
+    reserves the right to proceed against either or all guarantors without
+    first having to realise any security provided under this agreement.</p>
+
+  <h3>10. GUARANTOR'S UNDERTAKING</h3>
+  <p>By appending their signature(s) to this agreement, the guarantor(s)
+    undertake to pay the entire amount outstanding on this loan inclusive of
+    penalties and other charges in the event the Borrower fails or is unable to
+    comply with this agreement for any reason whatsoever including but not
+    limited to bankruptcy, death etc.</p>
+  {% for link in app.guarantee_links %}
+  <p>GUARANTOR: {{ link.guarantor.full_name }} · Occupation:
+    {{ link.guarantor.occupation or '____________' }} · Residence:
+    {{ link.guarantor.residence or '____________' }} · Contact:
+    {{ link.guarantor.phone or '____________' }}<br>
+    SIGNATURE: ____________________________</p>
+  {% else %}
+  <p>GUARANTOR NAME: ____________________________ OCCUPATION: ____________________<br>
+     RESIDENCE: ____________________________ CONTACT: ____________________<br>
+     SIGNATURE: ____________________________</p>
+  {% endfor %}
+
+  <h3>11. CREDIT BUREAU</h3>
+  <p>Please note that the information on this facility will be made available
+    to a licensed Credit Bureau approved by the Bank of Ghana as required by
+    the Credit Reporting Act 2007, Act 726. Any default without satisfactory
+    arrangement with {{ institution.legal_name }} will also be reported to an
+    approved Credit Bureau after formal demand has been made to you thereof.</p>
+
+  <h3>12. DATA PROTECTION</h3>
+  <p>{{ institution.legal_name }} processes the Borrower's personal data in
+    accordance with the Data Protection Act 2012 (Act 843), solely for the
+    assessment, administration and recovery of this facility and for statutory
+    reporting.</p>
+
+  <h3>13. EXECUTION</h3>
+  <p>IN WITNESS WHEREOF the parties hereto have set their hands the day and
+    year first above written.</p>
+  <p>SIGNED by <strong>{{ customer.full_name }}</strong> (after the content has
+    been read over and explained to him/her in the
+    <strong>{{ agreement.language_explained }}</strong> language and he/she
+    seemed to perfectly understand same before signing or making his/her mark)
+    in the presence of:
+    {{ agreement.witness_name or '____________________________' }}
+    {% if agreement.witness_phone %}({{ agreement.witness_phone }}){% endif %}</p>
+  <p>____________________________<br>BORROWER (signature / thumbprint)</p>
+  <p>SIGNED for and on behalf of THE LENDER, <strong>{{ institution.legal_name }}</strong>, by
+    {{ institution.manager_name or institution.proprietor_name or '____________________________' }}:</p>
+  <p>____________________________<br>LENDER</p>
+</div>

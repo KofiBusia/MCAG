@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Chart of accounts</h1>
+<p>
+  <a class="btn btn-secondary" href="{{ url_for('accounting.journals') }}">Journals</a>
+  <a class="btn btn-secondary" href="{{ url_for('accounting.expenses') }}">Expenses</a>
+  <a class="btn btn-secondary" href="{{ url_for('accounting.general_ledger') }}">General ledger</a>
+  <a class="btn btn-secondary" href="{{ url_for('accounting.trial_balance_view') }}">Trial balance</a>
+  <a class="btn btn-secondary" href="{{ url_for('accounting.income_statement_view') }}">Income statement</a>
+  <a class="btn btn-secondary" href="{{ url_for('accounting.balance_sheet_view') }}">Balance sheet</a>
+</p>
+<table>
+  <tr><th>Code</th><th>Name</th><th>Type</th><th>Subtype</th><th>Status</th></tr>
+  {% for a in accounts %}
+  <tr><td>{{ a.code }}</td><td>{{ a.name }}</td><td>{{ a.type }}</td><td>{{ a.subtype }}</td>
+      <td><span class="badge {% if a.active %}badge-success{% endif %}">{{ 'active' if a.active else 'inactive' }}</span></td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

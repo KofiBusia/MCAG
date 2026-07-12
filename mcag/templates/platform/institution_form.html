@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Register microcredit enterprise</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Registered legal name *</span><input name="legal_name" required></label>
+    <label class="field"><span>Trading name</span><input name="trading_name"></label>
+    <label class="field"><span>MCAG membership number</span><input name="mcag_membership_number"></label>
+    <label class="field"><span>Email</span><input type="email" name="email"></label>
+    <label class="field"><span>Telephone</span><input name="phone_primary"></label>
+    <label class="field field-wide"><span>Approved office address</span><input name="office_address"></label>
+    <fieldset>
+      <legend>Institution administrator account</legend>
+      <label class="field"><span>Full name *</span><input name="admin_name" required></label>
+      <label class="field"><span>Email *</span><input type="email" name="admin_email" required></label>
+      <label class="field"><span>Temporary password *</span><input type="password" name="admin_password" required></label>
+    </fieldset>
+    <div class="field-wide"><button class="btn" type="submit">Register (pending approval)</button></div>
+  </form>
+</div>
+{% endblock %}

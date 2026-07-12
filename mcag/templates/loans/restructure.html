@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Restructure — {{ loan.loan_number }}</h1>
+<p class="note">The original loan remains visible and linked to new terms.
+Approved restructures mark this loan Restructured; the replacement facility is
+created through the normal application → approval → agreement workflow with an
+updated assessment.</p>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Type</span>
+      <select name="restructure_type">
+        <option value="reschedule">Repayment rescheduling</option>
+        <option value="extension">Extension</option>
+        <option value="moratorium">Moratorium</option>
+        <option value="refinance">Refinancing</option>
+        <option value="top_up">Top-up</option>
+        <option value="settlement_arrangement">Settlement arrangement</option>
+      </select></label>
+    <label class="field"><span>Customer request reference</span><input name="customer_request_reference"></label>
+    <label class="field field-wide"><span>Reason *</span><input name="reason" required></label>
+    <label class="field field-wide"><span>Proposed new terms</span><textarea name="new_terms" rows="2"></textarea></label>
+    <label class="field"><span>Credit bureau reporting treatment</span><input name="credit_bureau_treatment" placeholder="e.g. report as restructured"></label>
+    <div class="field"><button class="btn" type="submit">Submit request</button></div>
+  </form>
+</div>
+<table>
+  <tr><th>Date</th><th>Type</th><th>Reason</th><th class="num">Old balance</th><th>Status</th><th></th></tr>
+  {% for r in requests %}
+  <tr>
+    <td>{{ r.created_at|ghdate }}</td><td>{{ r.restructure_type }}</td><td>{{ r.reason }}</td>
+    <td class="num">{{ r.old_balance|cedi }}</td>
+    <td><span class="badge">{{ r.status }}</span></td>
+    <td>{% if r.status == 'pending' and current_user.can('approve') and r.requested_by_id != current_user.id %}
+      <form method="post" action="{{ url_for('loans.approve_restructure', rec_id=r.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm" name="decision" value="approve">Approve</button>
+        <button class="btn btn-sm btn-danger" name="decision" value="reject">Reject</button>
+      </form>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

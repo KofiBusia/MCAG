@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Application {{ app.application_number }} <span class="badge">{{ app.status }}</span></h1>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Summary</h2>
+    <table>
+      <tr><td>Customer</td><td><a href="{{ url_for('customers.detail', customer_id=app.customer_id) }}">{{ app.customer.full_name }}</a></td></tr>
+      <tr><td>Product</td><td>{{ app.product.name }}</td></tr>
+      <tr><td>Purpose</td><td>{{ app.loan_purpose }} ({{ app.purpose_sector or '—' }})</td></tr>
+      <tr><td>Amount requested</td><td>{{ app.amount_requested|cedi }}</td></tr>
+      <tr><td>Proposed tenure</td><td>{{ app.proposed_tenure }} {{ app.repayment_frequency }}</td></tr>
+      <tr><td>Collateral proposed</td><td>{{ app.proposed_collateral or '—' }}</td></tr>
+      <tr><td>Receiving officer</td><td>{{ app.receiving_officer.full_name if app.receiving_officer else '—' }}</td></tr>
+      {% if app.approved_amount %}
+      <tr><td>Approved</td><td>{{ app.approved_amount|cedi }} @ {{ app.approved_rate }}% for {{ app.approved_tenure }} periods
+        by {{ app.approved_by.full_name if app.approved_by else '—' }}</td></tr>
+      {% if app.approval_conditions %}<tr><td>Conditions</td><td>{{ app.approval_conditions }}</td></tr>{% endif %}
+      {% endif %}
+      {% if app.decline_reason %}<tr><td>Decline reason</td><td>{{ app.decline_reason }}</td></tr>{% endif %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Workflow</h2>
+    {% if transitions and current_user.can('edit') %}
+    <form method="post" action="{{ url_for('applications.change_status', app_id=app.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Move to</span>
+        <select name="status">{% for t in transitions %}<option>{{ t }}</option>{% endfor %}</select></label>
+      <label class="field"><span>Note</span><input name="note"></label>
+      <button class="btn btn-sm" type="submit">Update status</button>
+    </form>
+    {% endif %}
+    <p>
+      {% if current_user.can('field_verify') %}
+      <a class="btn btn-sm btn-secondary" href="{{ url_for('applications.field_verification', app_id=app.id) }}">Field verification</a>
+      {% endif %}
+      {% if current_user.can('assess') %}
+      <a class="btn btn-sm btn-secondary" href="{{ url_for('applications.assessment', app_id=app.id) }}">Credit assessment</a>
+      {% endif %}
+      {% if current_user.can('approve') and app.status in ('Recommended', 'Deferred', 'Credit Assessment') %}
+      <a class="btn btn-sm" href="{{ url_for('applications.approve', app_id=app.id) }}">Approval decision</a>
+      {% endif %}
+    </p>
+    {% if app.status in ('Approved', 'Approved With Conditions') and current_user.can('edit') %}
+    <form method="post" action="{{ url_for('applications.generate_offer', app_id=app.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Offer validity (days)</span><input type="number" name="validity_days" value="30"></label>
+      <button class="btn" type="submit">Generate offer letter</button>
+    </form>
+    {% endif %}
+    <h3>Status history</h3>
+    <table>
+      {% for h in app.status_history %}
+      <tr><td>{{ h.changed_at }}</td><td>{{ h.from_status or '—' }} → {{ h.to_status }}</td>
+          <td>{{ h.changed_by.full_name if h.changed_by else '' }}</td><td class="note">{{ h.note }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Offers &amp; agreement</h2>
+  <table>
+    <tr><th>Offer</th><th>Status</th><th>Expiry</th><th></th></tr>
+    {% for o in app.offers %}
+    <tr>
+      <td>{{ o.offer_number }}</td>
+      <td><span class="badge">{{ o.status }}</span></td>
+      <td>{{ o.offer_expiry_date|ghdate }}</td>
+      <td>
+        <a href="{{ url_for('applications.offer_view', app_id=app.id, offer_id=o.id) }}">View</a> ·
+        <a href="{{ url_for('applications.offer_pdf', app_id=app.id, offer_id=o.id) }}">PDF</a> ·
+        <a href="{{ url_for('applications.offer_docx', app_id=app.id, offer_id=o.id) }}">Word</a>
+        {% if o.status == 'issued' and current_user.can('edit') %}
+        <form method="post" action="{{ url_for('applications.offer_decision', app_id=app.id, offer_id=o.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm" name="decision" value="accept">Mark accepted</button>
+          <button class="btn btn-sm btn-danger" name="decision" value="reject">Mark rejected</button>
+        </form>
+        {% endif %}
+        {% if o.status == 'accepted' and not o.signed_document_id %}
+        <form method="post" action="{{ url_for('applications.offer_signed_upload', app_id=app.id, offer_id=o.id) }}"
+              enctype="multipart/form-data" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="file" name="file"><button class="btn btn-sm">Upload signed copy</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="4" class="note">No offers issued.</td></tr>{% endfor %}
+  </table>
+
+  {% set accepted = app.offers|selectattr('status', 'equalto', 'accepted')|list %}
+  {% if accepted and current_user.can('edit') and not app.agreements %}
+  <form method="post" action="{{ url_for('applications.generate_agreement', app_id=app.id) }}" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Language explained in</span><input name="language_explained" value="English"></label>
+    <label class="field"><span>Witness name</span><input name="witness_name"></label>
+    <label class="field"><span>Witness phone</span><input name="witness_phone"></label>
+    <div class="field"><button class="btn" type="submit">Generate loan agreement</button></div>
+  </form>
+  {% endif %}
+  {% for g in app.agreements %}
+  <p>
+    Agreement dated {{ g.agreement_date|ghdate }} —
+    <a href="{{ url_for('applications.agreement_view', app_id=app.id, agreement_id=g.id) }}">View</a> ·
+    <a href="{{ url_for('applications.agreement_pdf', app_id=app.id, agreement_id=g.id) }}">PDF</a> ·
+    <a href="{{ url_for('applications.agreement_docx', app_id=app.id, agreement_id=g.id) }}">Word</a>
+    {% if g.executed %}<span class="badge badge-success">executed</span>
+    {% elif current_user.can('edit') %}
+    <form method="post" action="{{ url_for('applications.agreement_execute', app_id=app.id, agreement_id=g.id) }}"
+          enctype="multipart/form-data" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="file" name="file">
+      <button class="btn btn-sm" type="submit">Mark executed (upload signed copy)</button>
+    </form>
+    {% endif %}
+  </p>
+  {% endfor %}
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Guarantors ({{ app.product.guarantors_required }} required)</h2>
+    <table>
+      <tr><th>Name</th><th class="num">Guaranteed</th><th>Status</th></tr>
+      {% for link in app.guarantee_links %}
+      <tr><td>{{ link.guarantor.full_name }}</td>
+          <td class="num">{{ link.guaranteed_amount|cedi if link.guaranteed_amount else '—' }}</td>
+          <td><span class="badge">{{ link.status }}</span></td></tr>
+      {% else %}<tr><td colspan="3" class="note">No guarantors linked.</td></tr>{% endfor %}
+    </table>
+    {% if current_user.can('edit') %}
+    <form method="post" action="{{ url_for('applications.link_guarantor', app_id=app.id) }}" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Guarantor</span>
+        <select name="guarantor_id" required>
+          {% for g in guarantors %}<option value="{{ g.id }}">{{ g.full_name }}</option>{% endfor %}
+        </select></label>
+      <label class="field"><span>Guaranteed amount</span><input type="number" step="0.01" name="guaranteed_amount"></label>
+      <div class="field"><button class="btn btn-sm" type="submit">Link guarantor</button></div>
+    </form>
+    <p class="note"><a href="{{ url_for('applications.guarantors') }}">Register a new guarantor →</a></p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Collateral</h2>
+    <table>
+      <tr><th>Type</th><th>Description</th><th class="num">Market value</th></tr>
+      {% for col in app.collaterals %}
+      <tr><td>{{ col.collateral_type.replace('_',' ')|title }}</td><td>{{ col.description }}</td>
+          <td class="num">{{ col.estimated_market_value|cedi if col.estimated_market_value else '—' }}</td></tr>
+      {% else %}<tr><td colspan="3" class="note">No collateral recorded.</td></tr>{% endfor %}
+    </table>
+    {% if current_user.can('edit') %}
+    <form method="post" action="{{ url_for('applications.add_collateral', app_id=app.id) }}" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Type</span>
+        <select name="collateral_type">{% for v, l in collateral_types %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></label>
+      <label class="field field-wide"><span>Description *</span><input name="description" required></label>
+      <label class="field"><span>Owner</span><input name="owner_name"></label>
+      <label class="field"><span>Relationship to borrower</span><input name="owner_relationship"></label>
+      <label class="field"><span>Location</span><input name="location"></label>
+      <label class="field"><span>Market value (GH¢)</span><input type="number" step="0.01" name="estimated_market_value"></label>
+      <label class="field"><span>Forced-sale value (GH¢)</span><input type="number" step="0.01" name="forced_sale_value"></label>
+      <label class="field"><span>Valuation date</span><input type="date" name="valuation_date"></label>
+      <label class="field"><span>Valuer</span><input name="valuer"></label>
+      <label class="field"><span>Proof of ownership</span><input name="proof_of_ownership"></label>
+      <label class="field"><span>Registry reference</span><input name="collateral_registry_reference"></label>
+      <div class="field"><button class="btn btn-sm" type="submit">Add collateral</button></div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Pre-disbursement checklist</h2>
+  <table>
+    {% for label, ok in checklist %}
+    <tr><td>{{ label }}</td>
+        <td>{% if ok %}<span class="badge badge-success">complete</span>
+            {% else %}<span class="badge badge-danger">outstanding</span>{% endif %}</td></tr>
+    {% endfor %}
+  </table>
+  {% if current_user.can('disburse') and app.status in ('Offer Accepted', 'Documentation Completed', 'Ready for Disbursement') %}
+  <p><a class="btn" href="{{ url_for('loans.initiate_disbursement', app_id=app.id) }}">Initiate disbursement</a></p>
+  {% endif %}
+</div>
+{% endblock %}

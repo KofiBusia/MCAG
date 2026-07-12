@@ -1,0 +1,63 @@
+# Render Blueprint — deploys the web service and PostgreSQL database.
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: mcag-loan-management
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: flask db upgrade && gunicorn app:app --workers 2 --timeout 120 --log-file -
+    healthCheckPath: /healthz
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mcag-postgres
+          property: connectionString
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SESSION_COOKIE_HTTPONLY
+        value: "true"
+      - key: SESSION_COOKIE_SAMESITE
+        value: Lax
+      - key: SESSION_TIMEOUT_MINUTES
+        value: "30"
+      - key: MAX_LOGIN_ATTEMPTS
+        value: "5"
+      - key: ACCOUNT_LOCK_MINUTES
+        value: "30"
+      - key: PASSWORD_RESET_TOKEN_EXPIRY_MINUTES
+        value: "30"
+      - key: UPLOAD_FOLDER
+        value: /var/data/uploads
+      - key: MAX_UPLOAD_SIZE_MB
+        value: "10"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DEFAULT_TIMEZONE
+        value: Africa/Accra
+      - key: DEFAULT_CURRENCY
+        value: GHS
+      - key: APP_NAME
+        value: MCAG Loan Management System
+      # Set these two in the Render dashboard, then run
+      # `flask create-platform-admin` in a shell:
+      - key: PLATFORM_ADMIN_EMAIL
+        sync: false
+      - key: PLATFORM_ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: mcag-uploads
+      mountPath: /var/data
+      sizeGB: 5
+
+databases:
+  - name: mcag-postgres
+    plan: basic-256mb
+    databaseName: mcag
+    user: mcag

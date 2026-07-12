@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Approval decision — {{ app.application_number }}</h1>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Context</h2>
+    <table>
+      <tr><td>Customer</td><td>{{ app.customer.full_name }}</td></tr>
+      <tr><td>Product</td><td>{{ app.product.name }} ({{ app.product.min_rate }}–{{ app.product.max_rate }}% {{ app.product.rate_period }})</td></tr>
+      <tr><td>Requested</td><td>{{ app.amount_requested|cedi }} for {{ app.proposed_tenure }} periods</td></tr>
+      {% if assessment %}
+      <tr><td>Recommended</td><td>{{ assessment.amount_recommended|cedi if assessment.amount_recommended else '—' }}
+        @ {{ assessment.rate_recommended or '—' }}% for {{ assessment.tenure_recommended or '—' }} periods</td></tr>
+      <tr><td>Risk rating</td><td>{{ assessment.risk_rating or '—' }}</td></tr>
+      <tr><td>Officer recommendation</td><td>{{ assessment.recommendation or '—' }}</td></tr>
+      {% else %}
+      <tr><td colspan="2" class="note">No credit assessment recorded yet.</td></tr>
+      {% endif %}
+      <tr><td>Your approval limit</td>
+          <td>{{ current_user.approval_limit|cedi if current_user.approval_limit else 'No limit set' }}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Decision</h2>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Approved amount (GH¢)</span>
+        <input type="number" step="0.01" name="approved_amount"
+               value="{{ assessment.amount_recommended if assessment and assessment.amount_recommended else app.amount_requested }}"></label>
+      <label class="field"><span>Approved tenure (periods)</span>
+        <input type="number" name="approved_tenure"
+               value="{{ assessment.tenure_recommended if assessment and assessment.tenure_recommended else app.proposed_tenure }}"></label>
+      <label class="field"><span>Approved rate (% {{ app.product.rate_period }})</span>
+        <input type="number" step="0.01" name="approved_rate"
+               value="{{ assessment.rate_recommended if assessment and assessment.rate_recommended else app.product.min_rate }}"></label>
+      <label class="field field-wide"><span>Conditions</span><input name="conditions"></label>
+      <label class="field field-wide"><span>Reason for reduction (if reduced)</span><input name="reduction_reason"></label>
+      <label class="field field-wide"><span>Policy exceptions</span><input name="policy_exceptions"></label>
+      <label class="field field-wide"><span>Reason (for deferral / decline)</span><input name="decline_reason"></label>
+      <div class="field-wide">
+        <button class="btn" name="decision" value="approve">Approve</button>
+        <button class="btn" name="decision" value="approve_conditions">Approve with conditions</button>
+        <button class="btn btn-warning" name="decision" value="defer">Defer</button>
+        <button class="btn btn-danger" name="decision" value="decline">Decline</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

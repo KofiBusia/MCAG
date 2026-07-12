@@ -1,0 +1,19 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header"><h1>{{ institution.legal_name }}</h1></div>
+<h2>COLLATERAL INSPECTION FORM</h2>
+<table class="doc-table">
+  <tr><td>Collateral type</td><td>{{ record.collateral_type.replace('_',' ')|title }}</td></tr>
+  <tr><td>Description</td><td>{{ record.description }}</td></tr>
+  <tr><td>Owner</td><td>{{ record.owner_name or '' }} ({{ record.owner_relationship or 'borrower' }})</td></tr>
+  <tr><td>Location</td><td>{{ record.location or '' }}</td></tr>
+  <tr><td>Estimated market value</td><td>{{ record.estimated_market_value|cedi if record.estimated_market_value else '____________' }}</td></tr>
+  <tr><td>Forced-sale value</td><td>{{ record.forced_sale_value|cedi if record.forced_sale_value else '____________' }}</td></tr>
+  <tr><td>Valuer</td><td>{{ record.valuer or '____________' }}</td></tr>
+  <tr><td>Valuation date</td><td>{{ record.valuation_date|ghdate if record.valuation_date else '____________' }}</td></tr>
+</table>
+<h3>Inspection findings</h3>
+<p>Condition observed: ______________________________________________________</p>
+<p>Encumbrances noted: ______________________________________________________</p>
+<p>Photographs taken: YES / NO &nbsp;&nbsp; Proof of ownership sighted: YES / NO</p>
+<p>Inspecting officer: ______________________ Signature: ____________ Date: ________</p>
+</body></html>

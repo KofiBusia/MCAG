@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Record repayment</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Loan *</span>
+      <select name="loan_id" required>
+        <option value="">— select —</option>
+        {% for l in loans %}
+        <option value="{{ l.id }}">{{ l.loan_number }} — {{ l.customer.full_name }}
+          (outstanding {{ l.total_outstanding|cedi }})</option>
+        {% endfor %}
+      </select></label>
+    <label class="field"><span>Amount (GH¢) *</span><input type="number" step="0.01" name="amount" required></label>
+    <label class="field"><span>Date paid</span><input type="date" name="paid_at"></label>
+    <label class="field"><span>Method</span>
+      <select name="method">{% for v, l in methods %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></label>
+    <label class="field"><span>External reference (MoMo / bank ref)</span><input name="external_reference"></label>
+    <label class="field"><span>Collection zone</span>
+      <select name="collection_zone_id"><option value="">—</option>
+        {% for z in zones %}<option value="{{ z.id }}">{{ z.name }}</option>{% endfor %}
+      </select></label>
+    <p class="note field-wide">Payments are allocated automatically:
+      penalties → interest → fees → principal, oldest instalment first.
+      A sequential receipt is issued.</p>
+    <div class="field-wide"><button class="btn" type="submit">Record payment &amp; issue receipt</button></div>
+  </form>
+</div>
+{% endblock %}

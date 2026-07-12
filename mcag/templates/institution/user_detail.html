@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ user.full_name }}</h1>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Details</h2>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Full name</span><input name="full_name" value="{{ user.full_name }}"></label>
+      <label class="field"><span>Phone</span><input name="phone" value="{{ user.phone or '' }}"></label>
+      <label class="field"><span>Role</span>
+        <select name="role">
+          {% for value, label in roles %}
+          <option value="{{ value }}" {% if user.role == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select></label>
+      <label class="field"><span>Approval limit</span>
+        <input type="number" step="0.01" name="approval_limit" value="{{ user.approval_limit or '' }}"></label>
+      <div class="field-wide">
+        <button class="btn" name="action" value="update">Save</button>
+        {% if user.is_active_user %}
+        <button class="btn btn-danger" name="action" value="deactivate">Deactivate</button>
+        {% else %}
+        <button class="btn" name="action" value="activate">Reactivate</button>
+        {% endif %}
+      </div>
+    </form>
+    <hr>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Reset password</span><input type="password" name="password"></label>
+      <div class="field"><button class="btn btn-secondary" name="action" value="reset_password">Reset password</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Login history</h2>
+    <p class="note">Last login: {{ user.last_login_at or 'never' }} {{ '(' + user.last_login_ip + ')' if user.last_login_ip }}</p>
+    <table>
+      <tr><th>Time</th><th>Event</th><th>IP</th></tr>
+      {% for e in history %}
+      <tr><td>{{ e.occurred_at }}</td>
+          <td><span class="badge {% if e.event == 'failed' %}badge-danger{% elif e.event == 'login' %}badge-success{% endif %}">{{ e.event }}</span></td>
+          <td>{{ e.ip_address }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}

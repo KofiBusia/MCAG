@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Field collections — {{ totals.expected|cedi }} expected today</h1>
+<form method="get" class="inline">
+  <select name="zone_id">
+    <option value="">All zones</option>
+    {% for z in zones %}<option value="{{ z.id }}" {% if z.id == zone_id %}selected{% endif %}>{{ z.name }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
+<div class="stats">
+  <div class="stat"><div class="label">Total expected</div><div class="value">{{ totals.expected|cedi }}</div></div>
+  <div class="stat"><div class="label">Collected today</div><div class="value">{{ totals.collected|cedi }}</div></div>
+  <div class="stat"><div class="label">Cash</div><div class="value">{{ totals.cash|cedi }}</div></div>
+  <div class="stat"><div class="label">Mobile money</div><div class="value">{{ totals.momo|cedi }}</div></div>
+  <div class="stat"><div class="label">Bank transfers</div><div class="value">{{ totals.bank|cedi }}</div></div>
+</div>
+<div class="card">
+  <h2>Collection list</h2>
+  <table>
+    <tr><th>Customer</th><th>Zone</th><th>Location</th><th>Telephone</th>
+        <th>Due date</th><th class="num">Instalment due</th><th class="num">Outstanding</th><th></th></tr>
+    {% for i in instalments %}
+    <tr>
+      <td>{{ i.loan.customer.full_name }}</td>
+      <td>{{ i.loan.collection_zone.name if i.loan.collection_zone else '—' }}</td>
+      <td>{{ i.loan.customer.residential_location or '—' }}</td>
+      <td>{{ i.loan.customer.phone_primary or '—' }}</td>
+      <td>{{ i.due_date|ghdate }}</td>
+      <td class="num">{{ i.total_due|cedi }}</td>
+      <td class="num">{{ i.total_outstanding|cedi }}</td>
+      <td><a class="btn btn-sm" href="{{ url_for('collections.index') }}">Collect</a></td>
+    </tr>
+    {% else %}<tr><td colspan="8" class="note">Nothing due for collection.</td></tr>{% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Collected today</h2>
+  <table>
+    <tr><th>Receipt</th><th>Customer</th><th class="num">Amount</th><th>Method</th><th>Time</th></tr>
+    {% for r in collected %}
+    <tr><td>{{ r.receipt_number }}</td><td>{{ r.loan.customer.full_name }}</td>
+        <td class="num">{{ r.amount|cedi }}</td><td>{{ r.method }}</td><td>{{ r.created_at.strftime('%H:%M') }}</td></tr>
+    {% endfor %}
+  </table>
+  <p class="note">Reconcile end-of-day totals in the <a href="{{ url_for('collections.cashbook') }}">cashbook</a>
+    (cash handed over, banked, variance, supervisor confirmation).</p>
+</div>
+{% endblock %}

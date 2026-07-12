@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Staff performance</h1>
+<p class="note">Staff are measured across processing, quality (PAR) and
+recovery — never by disbursement volume alone.</p>
+<table>
+  <tr><th>Staff</th><th>Role</th><th class="num">Applications</th><th class="num">Field visits</th>
+      <th class="num">Approved</th><th class="num">Disbursed</th><th class="num">Portfolio</th>
+      <th class="num">Collected</th><th class="num">PAR30</th><th class="num">PAR90</th>
+      <th class="num">Delinquent</th><th class="num">Recovery actions</th><th class="num">Reversals</th></tr>
+  {% for r in rows %}
+  <tr>
+    <td>{{ r.user.full_name }}</td><td>{{ r.user.role_label }}</td>
+    <td class="num">{{ r.applications }}</td>
+    <td class="num">{{ r.field_visits }}</td>
+    <td class="num">{{ r.approved|cedi }}</td>
+    <td class="num">{{ r.disbursed|cedi }}</td>
+    <td class="num">{{ r.portfolio|cedi }}</td>
+    <td class="num">{{ r.collected|cedi }}</td>
+    <td class="num">{{ r.par30|cedi }}</td>
+    <td class="num">{{ r.par90|cedi }}</td>
+    <td class="num">{{ r.delinquent }}</td>
+    <td class="num">{{ r.recovery_actions }}</td>
+    <td class="num">{{ r.reversals }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

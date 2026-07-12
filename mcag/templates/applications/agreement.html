@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loan agreement — {{ app.application_number }}
+  {% if agreement.executed %}<span class="badge badge-success">executed</span>{% endif %}</h1>
+<p>
+  <a class="btn" href="{{ url_for('applications.agreement_pdf', app_id=app.id, agreement_id=agreement.id) }}">Download PDF</a>
+  <a class="btn btn-secondary" href="{{ url_for('applications.agreement_docx', app_id=app.id, agreement_id=agreement.id) }}">Download Word</a>
+  <a class="btn btn-secondary" href="{{ url_for('applications.detail', app_id=app.id) }}">Back to application</a>
+</p>
+<div class="card">
+  {% include "applications/_agreement_body.html" %}
+</div>
+{% endblock %}

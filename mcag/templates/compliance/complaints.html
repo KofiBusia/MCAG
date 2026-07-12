@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Complaints register</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Customer (if applicable)</span>
+      <select name="customer_id"><option value="">—</option>
+        {% for c in customers %}<option value="{{ c.id }}">{{ c.customer_number }} — {{ c.full_name }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Complainant name</span><input name="complainant_name"></label>
+    <label class="field"><span>Date received</span><input type="date" name="date_received"></label>
+    <label class="field"><span>Channel</span>
+      <select name="channel">{% for v, l in channels %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Category</span><input name="category" placeholder="e.g. fees, conduct, records"></label>
+    <label class="field"><span>Assigned officer</span>
+      <select name="assigned_officer_id"><option value="">—</option>
+        {% for o in officers %}<option value="{{ o.id }}">{{ o.full_name }}</option>{% endfor %}
+      </select></label>
+    <label class="field field-wide"><span>Description *</span><textarea name="description" rows="2" required></textarea></label>
+    <div class="field"><button class="btn" type="submit">Record complaint</button></div>
+  </form>
+</div>
+<table>
+  <tr><th>Number</th><th>Customer</th><th>Category</th><th>Channel</th><th>Received</th><th>Officer</th><th>Status</th></tr>
+  {% for c in complaints %}
+  <tr>
+    <td><a href="{{ url_for('compliance.complaint_detail', complaint_id=c.id) }}">{{ c.complaint_number }}</a></td>
+    <td>{{ c.customer.full_name if c.customer else c.complainant_name or '—' }}</td>
+    <td>{{ c.category }}</td><td>{{ c.channel.replace('_',' ') }}</td>
+    <td>{{ c.date_received|ghdate }}</td>
+    <td>{{ c.assigned_officer.full_name if c.assigned_officer else '—' }}</td>
+    <td><span class="badge {% if c.status=='resolved' %}badge-success{% elif c.status=='escalated' %}badge-danger{% else %}badge-warning{% endif %}">{{ c.status }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

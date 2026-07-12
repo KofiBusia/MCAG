@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Credit assessment — {{ app.application_number }}</h1>
+<p class="note">{{ app.customer.full_name }} · requested {{ app.amount_requested|cedi }}
+  for {{ app.proposed_tenure }} {{ app.repayment_frequency }} periods.
+  Net disposable income, surplus and ratios are computed by the system.</p>
+<div class="card">
+<form method="post" class="grid-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <fieldset>
+    <legend>Cash-flow assessment (monthly GH¢)</legend>
+    <label class="field"><span>Daily sales</span><input type="number" step="0.01" name="daily_sales"></label>
+    <label class="field"><span>Monthly sales</span><input type="number" step="0.01" name="monthly_sales"></label>
+    <label class="field"><span>Cost of sales</span><input type="number" step="0.01" name="cost_of_sales"></label>
+    <label class="field"><span>Operating expenses</span><input type="number" step="0.01" name="operating_expenses"></label>
+    <label class="field"><span>Household expenses</span><input type="number" step="0.01" name="household_expenses"></label>
+    <label class="field"><span>Existing loan repayments</span><input type="number" step="0.01" name="existing_loan_repayments"></label>
+    <label class="field"><span>Other commitments</span><input type="number" step="0.01" name="other_commitments"></label>
+    <label class="field"><span>Proposed instalment</span><input type="number" step="0.01" name="proposed_instalment"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Character assessment</legend>
+    <label class="field"><span>Stability of residence</span><input name="residence_stability"></label>
+    <label class="field"><span>Years in business (confirmed)</span><input type="number" step="0.1" name="years_in_business_confirmed"></label>
+    <label class="field field-wide"><span>Previous repayment history</span><textarea name="previous_repayment_history" rows="2"></textarea></label>
+    <label class="field field-wide"><span>Supplier references</span><textarea name="supplier_references" rows="2"></textarea></label>
+    <label class="field field-wide"><span>Community references</span><textarea name="community_references" rows="2"></textarea></label>
+    <label class="field field-wide"><span>Credit bureau history</span><textarea name="credit_bureau_history" rows="2"></textarea></label>
+    <label class="field"><span>Accuracy of information supplied</span><input name="information_accuracy"></label>
+    <label class="field field-wide"><span>Loan officer observations</span><textarea name="officer_observations" rows="2"></textarea></label>
+  </fieldset>
+  <fieldset>
+    <legend>Business assessment (GH¢)</legend>
+    <label class="field"><span>Working capital</span><input type="number" step="0.01" name="working_capital"></label>
+    <label class="field"><span>Stock value</span><input type="number" step="0.01" name="stock_value"></label>
+    <label class="field"><span>Assets</span><input type="number" step="0.01" name="business_assets"></label>
+    <label class="field"><span>Liabilities</span><input type="number" step="0.01" name="business_liabilities"></label>
+    <label class="field"><span>Profitability (monthly)</span><input type="number" step="0.01" name="profitability"></label>
+    <label class="field"><span>Owner contribution</span><input type="number" step="0.01" name="owner_contribution"></label>
+    <label class="field field-wide"><span>Seasonality</span><input name="seasonality"></label>
+    <label class="field field-wide"><span>Business risks</span><input name="business_risks"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Recommendation (final decision rests with a human authorised officer)</legend>
+    <label class="field"><span>Amount recommended (GH¢)</span><input type="number" step="0.01" name="amount_recommended"></label>
+    <label class="field"><span>Tenure recommended</span><input type="number" name="tenure_recommended"></label>
+    <label class="field"><span>Frequency</span>
+      <select name="frequency_recommended">
+        <option value="">—</option><option value="weekly">Weekly</option>
+        <option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option>
+      </select></label>
+    <label class="field"><span>Rate recommended (%)</span><input type="number" step="0.01" name="rate_recommended"></label>
+    <label class="field field-wide"><span>Conditions</span><input name="conditions"></label>
+    <label class="field"><span>Risk rating</span>
+      <select name="risk_rating"><option value="">—</option>
+        {% for r in risk_ratings %}<option>{{ r }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Recommendation</span>
+      <select name="recommendation">
+        <option value="">—</option><option value="approve">Approve</option>
+        <option value="decline">Decline</option><option value="defer">Defer</option>
+      </select></label>
+  </fieldset>
+  <div class="field-wide"><button class="btn" type="submit">Save assessment</button></div>
+</form>
+</div>
+{% if app.assessments %}
+<div class="card">
+  <h2>Previous assessments</h2>
+  <table>
+    <tr><th>Date</th><th>Officer</th><th class="num">NDI</th><th class="num">Surplus</th>
+        <th class="num">Instalment/income</th><th>Risk</th><th>Recommendation</th></tr>
+    {% for a in app.assessments %}
+    <tr><td>{{ a.assessment_date|ghdate }}</td><td>{{ a.officer.full_name }}</td>
+        <td class="num">{{ a.net_disposable_income|cedi if a.net_disposable_income is not none else '—' }}</td>
+        <td class="num">{{ a.repayment_surplus|cedi if a.repayment_surplus is not none else '—' }}</td>
+        <td class="num">{{ a.instalment_to_income_percent ~ '%' if a.instalment_to_income_percent is not none else '—' }}</td>
+        <td>{{ a.risk_rating or '—' }}</td><td>{{ a.recommendation or '—' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

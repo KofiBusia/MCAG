@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Global document templates</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Key</span><input name="key" required placeholder="e.g. offer_footer"></label>
+    <label class="field"><span>Name</span><input name="name"></label>
+    <label class="field field-wide"><span>Body</span><textarea name="body" rows="5"></textarea></label>
+    <label class="field-check"><input type="checkbox" name="active" checked value="1"><span>Active</span></label>
+    <div class="field"><button class="btn" type="submit">Save template</button></div>
+  </form>
+</div>
+<table>
+  <tr><th>Key</th><th>Name</th><th>Active</th><th>Updated</th></tr>
+  {% for t in templates %}
+  <tr><td>{{ t.key }}</td><td>{{ t.name }}</td><td>{{ 'Yes' if t.active else 'No' }}</td><td>{{ t.updated_at|ghdate }}</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

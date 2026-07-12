@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Support requests</h1>
+{% for r in requests %}
+<div class="card">
+  <h3>{{ r.subject }} <span class="badge {% if r.status == 'resolved' %}badge-success{% else %}badge-warning{% endif %}">{{ r.status }}</span></h3>
+  <p class="note">{{ r.institution.legal_name if r.institution else 'Unknown' }} — {{ r.created_at|ghdate }}</p>
+  <p>{{ r.message }}</p>
+  {% if r.response %}<p><strong>Response:</strong> {{ r.response }}</p>{% endif %}
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="request_id" value="{{ r.id }}">
+    <label class="field"><span>Response</span><textarea name="response" rows="2">{{ r.response or '' }}</textarea></label>
+    <select name="status">
+      <option value="open" {% if r.status=='open' %}selected{% endif %}>Open</option>
+      <option value="in_progress" {% if r.status=='in_progress' %}selected{% endif %}>In progress</option>
+      <option value="resolved" {% if r.status=='resolved' %}selected{% endif %}>Resolved</option>
+    </select>
+    <button class="btn btn-sm" type="submit">Update</button>
+  </form>
+</div>
+{% else %}<p class="note">No support requests.</p>{% endfor %}
+{% endblock %}

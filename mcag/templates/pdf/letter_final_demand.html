@@ -1,0 +1,15 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+{% include "pdf/_letter_head.html" %}
+<h2>FINAL DEMAND LETTER</h2>
+<p>Dear {{ loan.customer.full_name }},</p>
+<p><strong>FINAL DEMAND</strong> is hereby made for full settlement of the
+outstanding balance on loan {{ loan.loan_number }} within seven (7) days of
+this letter, failing which the matter will be referred for lawful recovery
+action, which may include enforcement of security, a call on your
+guarantor(s), and legal proceedings, without further notice.</p>
+{% include "pdf/_arrears_summary.html" %}
+<p>Default will be reported to a licensed credit bureau approved by the Bank of
+Ghana as required by the Credit Reporting Act 2007 (Act 726).</p>
+<p>Yours faithfully,<br><br>____________________________<br>
+{{ institution.legal_name }}</p>
+</body></html>

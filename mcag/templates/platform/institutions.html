@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Microcredit enterprises</h1>
+<p><a class="btn" href="{{ url_for('platform_admin.institution_new') }}">Register institution</a></p>
+<table>
+  <tr><th>Legal name</th><th>MCAG No.</th><th>Status</th><th>Registered</th><th></th></tr>
+  {% for i in institutions %}
+  <tr>
+    <td>{{ i.legal_name }}</td><td>{{ i.mcag_membership_number or '—' }}</td>
+    <td><span class="badge {% if i.status == 'active' %}badge-success{% elif i.status in ('suspended','rejected') %}badge-danger{% else %}badge-warning{% endif %}">{{ i.status }}</span></td>
+    <td>{{ i.created_at|ghdate }}</td>
+    <td><a href="{{ url_for('platform_admin.institution_detail', inst_id=i.id) }}">Manage</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

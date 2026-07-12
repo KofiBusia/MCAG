@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ 'Edit customer' if customer else 'Register customer (MCAG Loan Application Form)' }}</h1>
+{% set c = customer %}
+<div class="card">
+<form method="post" class="grid-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <fieldset>
+    <legend>Personal data</legend>
+    <label class="field"><span>Full name *</span><input name="full_name" value="{{ c.full_name if c else '' }}" required></label>
+    <label class="field"><span>Alias (AKA)</span><input name="alias" value="{{ c.alias if c else '' }}"></label>
+    <label class="field"><span>Sex</span>
+      <select name="sex"><option value="">—</option>
+        <option value="Female" {% if c and c.sex=='Female' %}selected{% endif %}>Female</option>
+        <option value="Male" {% if c and c.sex=='Male' %}selected{% endif %}>Male</option>
+      </select></label>
+    <label class="field"><span>Date of birth</span><input type="date" name="date_of_birth" value="{{ c.date_of_birth or '' if c else '' }}"></label>
+    <label class="field"><span>Place of birth</span><input name="place_of_birth" value="{{ c.place_of_birth if c else '' }}"></label>
+    <label class="field"><span>Nationality</span><input name="nationality" value="{{ c.nationality if c else 'Ghanaian' }}"></label>
+    <label class="field"><span>Home town</span><input name="home_town" value="{{ c.home_town if c else '' }}"></label>
+    <label class="field"><span>Region</span>
+      <select name="region"><option value="">—</option>
+        {% for r in regions %}<option value="{{ r }}" {% if c and c.region==r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Ghana Card number (GHA-XXXXXXXXX-X)</span><input name="ghana_card_number" value="{{ c.ghana_card_number if c else '' }}"></label>
+    <label class="field"><span>Ghana Card issue date</span><input type="date" name="ghana_card_issue_date" value="{{ c.ghana_card_issue_date or '' if c else '' }}"></label>
+    <label class="field"><span>Ghana Card expiry date</span><input type="date" name="ghana_card_expiry_date" value="{{ c.ghana_card_expiry_date or '' if c else '' }}"></label>
+    <label class="field"><span>Marital status</span>
+      <select name="marital_status"><option value="">—</option>
+        {% for m in ['Single','Married','Divorced','Widowed'] %}
+        <option value="{{ m }}" {% if c and c.marital_status==m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Number of dependants</span><input type="number" name="dependants" value="{{ c.dependants if c else '' }}"></label>
+    <label class="field"><span>Cycle number</span><input type="number" name="cycle_number" value="{{ c.cycle_number if c else 1 }}"></label>
+    <label class="field"><span>Phone (primary)</span><input name="phone_primary" value="{{ c.phone_primary if c else '' }}"></label>
+    <label class="field"><span>Phone (secondary)</span><input name="phone_secondary" value="{{ c.phone_secondary if c else '' }}"></label>
+    <label class="field"><span>Collection zone</span>
+      <select name="collection_zone_id"><option value="">—</option>
+        {% for z in zones %}<option value="{{ z.id }}" {% if c and c.collection_zone_id==z.id %}selected{% endif %}>{{ z.name }}</option>{% endfor %}
+      </select></label>
+  </fieldset>
+
+  {% if current_user.institution.setting('sensitive_fields_enabled') %}
+  <fieldset>
+    <legend>Optional sensitive data (excluded from credit scoring)</legend>
+    <label class="field"><span>Ethnicity</span><input name="ethnicity" value="{{ c.ethnicity if c else '' }}"></label>
+    <label class="field"><span>Religion</span><input name="religion" value="{{ c.religion if c else '' }}"></label>
+    <label class="field"><span>Place of worship</span><input name="place_of_worship" value="{{ c.place_of_worship if c else '' }}"></label>
+    <label class="field"><span>Worship location</span><input name="worship_location" value="{{ c.worship_location if c else '' }}"></label>
+    <label class="field"><span>Worship leader</span><input name="worship_leader" value="{{ c.worship_leader if c else '' }}"></label>
+  </fieldset>
+  {% endif %}
+
+  <fieldset>
+    <legend>Residential data</legend>
+    <label class="field"><span>House number</span><input name="house_number" value="{{ c.house_number if c else '' }}"></label>
+    <label class="field"><span>Digital address</span><input name="residential_digital_address" value="{{ c.residential_digital_address if c else '' }}"></label>
+    <label class="field"><span>Location</span><input name="residential_location" value="{{ c.residential_location if c else '' }}"></label>
+    <label class="field"><span>Landmark</span><input name="residential_landmark" value="{{ c.residential_landmark if c else '' }}"></label>
+    <label class="field"><span>Years at current residence</span><input type="number" step="0.1" name="years_at_residence" value="{{ c.years_at_residence if c else '' }}"></label>
+    <label class="field"><span>Accommodation status</span>
+      <select name="accommodation_status"><option value="">—</option>
+        {% for a in ['owned','renting','family_house','employer_provided','other'] %}
+        <option value="{{ a }}" {% if c and c.accommodation_status==a %}selected{% endif %}>{{ a.replace('_',' ')|title }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Landlord / property owner</span><input name="landlord_name" value="{{ c.landlord_name if c else '' }}"></label>
+    <label class="field"><span>Rent expiry date</span><input type="date" name="rent_expiry_date" value="{{ c.rent_expiry_date or '' if c else '' }}"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Self-employed applicant</legend>
+    <label class="field"><span>Employment type</span>
+      <select name="employment_type">
+        {% for t in ['self_employed','salaried','both'] %}
+        <option value="{{ t }}" {% if c and c.employment_type==t %}selected{% endif %}>{{ t.replace('_',' ')|title }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Business name</span><input name="business_name" value="{{ c.business_name if c else '' }}"></label>
+    <label class="field"><span>Business type</span><input name="business_type" value="{{ c.business_type if c else '' }}"></label>
+    <label class="field"><span>Business location</span><input name="business_location" value="{{ c.business_location if c else '' }}"></label>
+    <label class="field"><span>Landmark</span><input name="business_landmark" value="{{ c.business_landmark if c else '' }}"></label>
+    <label class="field"><span>Years in business</span><input type="number" step="0.1" name="years_in_business" value="{{ c.years_in_business if c else '' }}"></label>
+    <label class="field"><span>Years at current location</span><input type="number" step="0.1" name="years_at_business_location" value="{{ c.years_at_business_location if c else '' }}"></label>
+    <label class="field"><span>Type of premises</span><input name="premises_type" value="{{ c.premises_type if c else '' }}"></label>
+    <label class="field"><span>Premises status</span><input name="premises_status" value="{{ c.premises_status if c else '' }}"></label>
+    <label class="field"><span>Estimated daily sales (GH¢)</span><input type="number" step="0.01" name="estimated_daily_sales" value="{{ c.estimated_daily_sales if c else '' }}"></label>
+    <label class="field"><span>Estimated daily expenses (GH¢)</span><input type="number" step="0.01" name="estimated_daily_expenses" value="{{ c.estimated_daily_expenses if c else '' }}"></label>
+    <label class="field"><span>Estimated working capital (GH¢)</span><input type="number" step="0.01" name="estimated_working_capital" value="{{ c.estimated_working_capital if c else '' }}"></label>
+    <label class="field"><span>Number of employees</span><input type="number" name="number_of_employees" value="{{ c.number_of_employees if c else '' }}"></label>
+    <label class="field"><span>Other income (GH¢/month)</span><input type="number" step="0.01" name="other_income" value="{{ c.other_income if c else '' }}"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Salaried applicant</legend>
+    <label class="field"><span>Employer</span><input name="employer_name" value="{{ c.employer_name if c else '' }}"></label>
+    <label class="field"><span>Employer location</span><input name="employer_location" value="{{ c.employer_location if c else '' }}"></label>
+    <label class="field"><span>Employer business type</span><input name="employer_business_type" value="{{ c.employer_business_type if c else '' }}"></label>
+    <label class="field"><span>Position</span><input name="position" value="{{ c.position if c else '' }}"></label>
+    <label class="field"><span>Years employed</span><input type="number" step="0.1" name="years_employed" value="{{ c.years_employed if c else '' }}"></label>
+    <label class="field"><span>Net monthly salary (GH¢)</span><input type="number" step="0.01" name="net_monthly_salary" value="{{ c.net_monthly_salary if c else '' }}"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Bank and mobile money</legend>
+    <label class="field"><span>Bank</span><input name="bank_name" value="{{ c.bank_name if c else '' }}"></label>
+    <label class="field"><span>Branch</span><input name="bank_branch" value="{{ c.bank_branch if c else '' }}"></label>
+    <label class="field"><span>Account name</span><input name="bank_account_name" value="{{ c.bank_account_name if c else '' }}"></label>
+    <label class="field"><span>Account number</span><input name="bank_account_number" value="{{ c.bank_account_number if c else '' }}"></label>
+    <label class="field"><span>Mobile money provider</span><input name="momo_provider" value="{{ c.momo_provider if c else '' }}"></label>
+    <label class="field"><span>Mobile money number</span><input name="momo_number" value="{{ c.momo_number if c else '' }}"></label>
+    <label class="field"><span>Mobile money name</span><input name="momo_name" value="{{ c.momo_name if c else '' }}"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Household and repayment capacity</legend>
+    <label class="field"><span>Household income (GH¢/month)</span><input type="number" step="0.01" name="household_income" value="{{ c.household_income if c else '' }}"></label>
+    <label class="field"><span>Household expenses (GH¢/month)</span><input type="number" step="0.01" name="household_expenses" value="{{ c.household_expenses if c else '' }}"></label>
+    <label class="field"><span>Existing monthly repayments (GH¢)</span><input type="number" step="0.01" name="existing_monthly_repayments" value="{{ c.existing_monthly_repayments if c else '' }}"></label>
+    <label class="field"><span>Source of repayment</span><input name="source_of_repayment" value="{{ c.source_of_repayment if c else '' }}"></label>
+    <label class="field field-wide"><span>Existing loans (details)</span><textarea name="existing_loans_details" rows="2">{{ c.existing_loans_details if c else '' }}</textarea></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Spouse, next of kin, relatives and references</legend>
+    <label class="field"><span>Spouse name</span><input name="spouse_name" value="{{ c.spouse_name if c else '' }}"></label>
+    <label class="field"><span>Spouse phone</span><input name="spouse_phone" value="{{ c.spouse_phone if c else '' }}"></label>
+    <label class="field"><span>Spouse occupation</span><input name="spouse_occupation" value="{{ c.spouse_occupation if c else '' }}"></label>
+    <label class="field"><span>Next of kin</span><input name="next_of_kin_name" value="{{ c.next_of_kin_name if c else '' }}"></label>
+    <label class="field"><span>Relationship</span><input name="next_of_kin_relationship" value="{{ c.next_of_kin_relationship if c else '' }}"></label>
+    <label class="field"><span>Next of kin phone</span><input name="next_of_kin_phone" value="{{ c.next_of_kin_phone if c else '' }}"></label>
+    <label class="field"><span>Next of kin address</span><input name="next_of_kin_address" value="{{ c.next_of_kin_address if c else '' }}"></label>
+    <label class="field field-wide"><span>Relatives (name / place of stay / phone)</span><textarea name="relatives_info" rows="2">{{ c.relatives_info if c else '' }}</textarea></label>
+    <label class="field field-wide"><span>References</span><textarea name="references_info" rows="2">{{ c.references_info if c else '' }}</textarea></label>
+  </fieldset>
+  <div class="field-wide"><button class="btn" type="submit">{{ 'Save changes' if c else 'Register customer' }}</button></div>
+</form>
+</div>
+{% endblock %}

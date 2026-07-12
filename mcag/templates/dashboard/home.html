@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block page_title %}Management Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <div class="stat"><div class="label">Total customers</div><div class="value">{{ total_customers }}</div></div>
+  <div class="stat"><div class="label">Active borrowers</div><div class="value">{{ active_borrowers }}</div></div>
+  <div class="stat"><div class="label">Amount disbursed</div><div class="value">{{ disbursed_total|cedi }}</div></div>
+  <div class="stat"><div class="label">Gross loan portfolio</div><div class="value">{{ portfolio.gross_portfolio|cedi }}</div></div>
+  <div class="stat"><div class="label">Principal outstanding</div><div class="value">{{ principal_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Interest outstanding</div><div class="value">{{ interest_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Collected today</div><div class="value">{{ collected_today|cedi }}</div></div>
+  <div class="stat"><div class="label">Collected this month</div><div class="value">{{ collected_month|cedi }}</div></div>
+  <div class="stat"><div class="label">Instalments due today</div><div class="value">{{ due_today }}</div></div>
+  <div class="stat"><div class="label">PAR 1</div><div class="value">{{ portfolio.par[1].ratio }}%</div></div>
+  <div class="stat"><div class="label">PAR 30</div><div class="value">{{ portfolio.par[30].ratio }}%</div></div>
+  <div class="stat"><div class="label">PAR 90</div><div class="value">{{ portfolio.par[90].ratio }}%</div></div>
+  <div class="stat"><div class="label">Provision required</div><div class="value">{{ portfolio.provision_required|cedi }}</div></div>
+  <div class="stat"><div class="label">Cash balance</div><div class="value">{{ cash_balance|cedi }}</div></div>
+  <div class="stat"><div class="label">Bank balance</div><div class="value">{{ bank_balance|cedi }}</div></div>
+  <div class="stat"><div class="label">Income (month)</div><div class="value">{{ income.total_income|cedi }}</div></div>
+  <div class="stat"><div class="label">Expenses (month)</div><div class="value">{{ income.total_expenses|cedi }}</div></div>
+  <div class="stat"><div class="label">Profit / loss (month)</div><div class="value">{{ income.net_profit|cedi }}</div></div>
+  <div class="stat"><div class="label">Collection rate (month)</div><div class="value">{{ month_collection.rate }}%</div></div>
+  <div class="stat"><div class="label">Open complaints</div><div class="value">{{ open_complaints }}</div></div>
+  <div class="stat"><div class="label">Fraud &amp; compliance alerts</div><div class="value">{{ open_alerts }}</div></div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Portfolio ageing</h2>
+    <table>
+      <tr><th>Bucket</th><th class="num">Loans</th><th class="num">Principal</th><th class="num">Provision</th></tr>
+      {% for key, b in portfolio.buckets.items() %}
+      <tr><td>{{ b.label }}</td><td class="num">{{ b.count }}</td>
+          <td class="num">{{ b.principal|cedi }}</td><td class="num">{{ b.provision|cedi }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Upcoming regulatory deadlines</h2>
+    {% if deadlines %}
+    <table>{% for label, d in deadlines %}<tr><td>{{ label }}</td><td>{{ d|ghdate }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="note">No renewal dates recorded on the institution profile.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

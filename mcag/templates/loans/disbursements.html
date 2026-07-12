@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Disbursements</h1>
+<div class="card">
+  <h2>Ready for disbursement</h2>
+  <table>
+    <tr><th>Application</th><th>Customer</th><th class="num">Approved</th><th>Status</th><th></th></tr>
+    {% for a in ready_apps %}
+    <tr>
+      <td><a href="{{ url_for('applications.detail', app_id=a.id) }}">{{ a.application_number }}</a></td>
+      <td>{{ a.customer.full_name }}</td>
+      <td class="num">{{ a.approved_amount|cedi }}</td>
+      <td><span class="badge">{{ a.status }}</span></td>
+      <td>{% if current_user.can('disburse') and a.status != 'Ready for Disbursement' %}
+        <a class="btn btn-sm" href="{{ url_for('loans.initiate_disbursement', app_id=a.id) }}">Initiate</a>{% endif %}</td>
+    </tr>
+    {% else %}<tr><td colspan="5" class="note">Nothing awaiting disbursement.</td></tr>{% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Disbursement history</h2>
+  <table>
+    <tr><th>Loan</th><th class="num">Gross</th><th class="num">Fees deducted</th><th class="num">Net</th>
+        <th>Method</th><th>Date</th><th>Initiated</th><th>Authorised</th><th>Status</th><th></th></tr>
+    {% for d in records %}
+    <tr>
+      <td><a href="{{ url_for('loans.detail', loan_id=d.loan_id) }}">{{ d.loan.loan_number }}</a></td>
+      <td class="num">{{ d.gross_principal|cedi }}</td>
+      <td class="num">{{ d.fees_deducted|cedi }}</td>
+      <td class="num">{{ d.net_amount|cedi }}</td>
+      <td>{{ d.method }}</td><td>{{ d.disbursement_date|ghdate }}</td>
+      <td>{{ d.initiated_by.full_name }}</td>
+      <td>{{ d.authorised_by.full_name if d.authorised_by else '—' }}</td>
+      <td><span class="badge {% if d.status=='completed' %}badge-success{% else %}badge-warning{% endif %}">{{ d.status }}</span></td>
+      <td>{% if d.status == 'pending' and current_user.can('approve') %}
+        <form method="post" action="{{ url_for('loans.authorise_disbursement', disb_id=d.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm">Authorise</button>
+        </form>{% endif %}</td>
+    </tr>
+    {% else %}<tr><td colspan="10" class="note">No disbursements.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

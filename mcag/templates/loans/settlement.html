@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Early settlement — {{ loan.loan_number }}</h1>
+{% if current_user.can('edit') %}
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn" type="submit">Generate settlement quotation (as of today)</button>
+</form>
+{% endif %}
+{% for q in quotes %}
+<div class="card">
+  <h3>Quotation of {{ q.quote_date|ghdate }} <span class="badge">{{ q.status }}</span></h3>
+  <table>
+    <tr><td>Principal outstanding</td><td class="num">{{ q.principal_outstanding|cedi }}</td></tr>
+    <tr><td>Interest accrued</td><td class="num">{{ q.interest_accrued|cedi }}</td></tr>
+    <tr><td>Early settlement charge</td><td class="num">{{ q.early_settlement_charge|cedi }}</td></tr>
+    <tr><td>Penalties</td><td class="num">{{ q.penalties|cedi }}</td></tr>
+    <tr><td>Waivers</td><td class="num">{{ q.waivers|cedi }}</td></tr>
+    <tr><td><strong>Total settlement</strong></td><td class="num"><strong>{{ q.total_settlement|cedi }}</strong></td></tr>
+    <tr><td>Valid until</td><td>{{ q.valid_until|ghdate }}</td></tr>
+  </table>
+  <p class="note">Record the settlement payment through Collections. When the
+    loan closes, the closure letter, zero-balance statement, collateral release
+    and guarantor discharge are available on the loan page.</p>
+</div>
+{% else %}<p class="note">No quotations yet.</p>{% endfor %}
+{% endblock %}

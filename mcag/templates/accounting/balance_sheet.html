@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Statement of financial position as at {{ to_date|ghdate }}</h1>
+<form method="get" class="inline">
+  <input type="date" name="to" value="{{ to_date }}"><button class="btn btn-sm">Change date</button>
+</form>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Assets</h2>
+    <table>
+      {% for r in data.assets %}<tr><td>{{ r.account.name }}</td><td class="num">{{ r.amount|cedi }}</td></tr>{% endfor %}
+      <tr><th>Total assets</th><th class="num">{{ data.total_assets|cedi }}</th></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Liabilities &amp; equity</h2>
+    <table>
+      {% for r in data.liabilities %}<tr><td>{{ r.account.name }}</td><td class="num">{{ r.amount|cedi }}</td></tr>{% endfor %}
+      <tr><th>Total liabilities</th><th class="num">{{ data.total_liabilities|cedi }}</th></tr>
+      {% for r in data.equity %}<tr><td>{{ r.account.name }}</td><td class="num">{{ r.amount|cedi }}</td></tr>{% endfor %}
+      <tr><td>Current period earnings</td><td class="num">{{ data.current_earnings|cedi }}</td></tr>
+      <tr><th>Total equity</th><th class="num">{{ data.total_equity|cedi }}</th></tr>
+    </table>
+  </div>
+</div>
+{% if not data.balanced %}
+<div class="flash flash-danger">Balance sheet does not balance — review journals.</div>
+{% endif %}
+{% endblock %}

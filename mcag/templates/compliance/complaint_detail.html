@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Complaint {{ c.complaint_number }} <span class="badge">{{ c.status }}</span></h1>
+<div class="card">
+  <table>
+    <tr><td>Customer</td><td>{{ c.customer.full_name if c.customer else c.complainant_name or '—' }}</td></tr>
+    <tr><td>Received</td><td>{{ c.date_received|ghdate }} via {{ c.channel.replace('_',' ') }}</td></tr>
+    <tr><td>Category</td><td>{{ c.category }}</td></tr>
+    <tr><td>Description</td><td>{{ c.description }}</td></tr>
+    <tr><td>Resolved</td><td>{{ c.date_resolved|ghdate if c.date_resolved else '—' }}</td></tr>
+  </table>
+</div>
+<div class="card">
+  <h2>Investigation &amp; resolution</h2>
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field field-wide"><span>Investigation notes</span>
+      <textarea name="investigation_notes" rows="3">{{ c.investigation_notes or '' }}</textarea></label>
+    <label class="field field-wide"><span>Resolution</span>
+      <textarea name="resolution" rows="2">{{ c.resolution or '' }}</textarea></label>
+    <label class="field"><span>Status</span>
+      <select name="status">
+        {% for s in ['open','investigating','resolved','escalated'] %}
+        <option value="{{ s }}" {% if c.status==s %}selected{% endif %}>{{ s|title }}</option>{% endfor %}
+      </select></label>
+    <label class="field-check"><input type="checkbox" name="customer_informed" value="1"
+      {% if c.customer_informed %}checked{% endif %}><span>Customer informed of outcome</span></label>
+    <label class="field field-wide"><span>Escalation details</span>
+      <input name="escalation_details" value="{{ c.escalation_details or '' }}"></label>
+    <div class="field"><button class="btn" type="submit">Update complaint</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Cashbook — daily reconciliation</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Date</span><input type="date" name="book_date" value="{{ today }}"></label>
+    <label class="field"><span>Cash handed over (GH¢)</span><input type="number" step="0.01" name="cash_handed_over" value="0"></label>
+    <label class="field"><span>Cash banked (GH¢)</span><input type="number" step="0.01" name="cash_banked" value="0"></label>
+    <label class="field"><span>Physical cash count (GH¢)</span><input type="number" step="0.01" name="physical_count"></label>
+    <p class="note field-wide">Receipts, disbursements and expenses for the day
+      are pulled automatically from the system. Variance = physical count −
+      computed closing balance.</p>
+    <div class="field"><button class="btn" type="submit">Compute &amp; submit day</button></div>
+  </form>
+</div>
+<table>
+  <tr><th>Date</th><th class="num">Opening</th><th class="num">Receipts</th>
+      <th class="num">Disbursed</th><th class="num">Expenses</th><th class="num">Handed over</th>
+      <th class="num">Banked</th><th class="num">Closing</th><th class="num">Variance</th><th>Status</th><th></th></tr>
+  {% for r in records %}
+  <tr>
+    <td>{{ r.book_date|ghdate }}</td>
+    <td class="num">{{ r.opening_balance|cedi }}</td>
+    <td class="num">{{ r.cash_receipts|cedi }}</td>
+    <td class="num">{{ r.cash_disbursements|cedi }}</td>
+    <td class="num">{{ r.expenses|cedi }}</td>
+    <td class="num">{{ r.cash_handed_over|cedi }}</td>
+    <td class="num">{{ r.cash_banked|cedi }}</td>
+    <td class="num">{{ r.closing_balance|cedi }}</td>
+    <td class="num">{{ r.variance|cedi }}</td>
+    <td><span class="badge {% if r.status=='approved' %}badge-success{% else %}badge-warning{% endif %}">{{ r.status }}</span></td>
+    <td>{% if r.status == 'submitted' and current_user.can('approve') and r.prepared_by_id != current_user.id %}
+      <form method="post" action="{{ url_for('collections.cashbook_approve', day_id=r.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm">Approve</button>
+      </form>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

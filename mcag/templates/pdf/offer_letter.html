@@ -1,0 +1,6 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+{% include "applications/_offer_body.html" %}
+<p class="muted">Offer {{ offer.offer_number }} — figures locked by the loan
+calculation engine. Generated {{ offer.generated_at }} by
+{{ offer.generated_by.full_name }}.</p>
+</body></html>

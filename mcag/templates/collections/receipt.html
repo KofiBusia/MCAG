@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Receipt {{ r.receipt_number }}
+  {% if r.reversed %}<span class="badge badge-danger">REVERSED</span>{% endif %}</h1>
+<p><a class="btn" href="{{ url_for('collections.receipt_pdf', repayment_id=r.id) }}">Download PDF</a></p>
+<div class="card" style="max-width:520px">
+  <table>
+    <tr><td>Loan</td><td>{{ r.loan.loan_number }}</td></tr>
+    <tr><td>Customer</td><td>{{ r.loan.customer.full_name }}</td></tr>
+    <tr><td>Amount</td><td><strong>{{ r.amount|cedi }}</strong></td></tr>
+    <tr><td>Date paid</td><td>{{ r.paid_at|ghdate }}</td></tr>
+    <tr><td>Method</td><td>{{ r.method }}</td></tr>
+    <tr><td>Reference</td><td>{{ r.external_reference or '—' }}</td></tr>
+    <tr><td>Collector</td><td>{{ r.collector.full_name }}</td></tr>
+    <tr><td>Allocated to principal</td><td>{{ r.allocated_principal|cedi }}</td></tr>
+    <tr><td>Allocated to interest</td><td>{{ r.allocated_interest|cedi }}</td></tr>
+    <tr><td>Allocated to penalties</td><td>{{ r.allocated_penalties|cedi }}</td></tr>
+    <tr><td>Outstanding after payment</td><td>{{ r.loan.total_outstanding|cedi }}</td></tr>
+    {% if r.reversed %}
+    <tr><td>Reversal reason</td><td>{{ r.reversal_reason }}</td></tr>
+    <tr><td>Reversed at</td><td>{{ r.reversed_at }}</td></tr>
+    {% endif %}
+  </table>
+</div>
+{% if not r.reversed and current_user.can('reverse_payment') %}
+<div class="card" style="max-width:520px">
+  <h3>Reverse receipt (maker-checker)</h3>
+  <p class="note">The collector cannot approve their own reversal. The receipt
+    stays on record marked reversed.</p>
+  <form method="post" action="{{ url_for('collections.reverse', repayment_id=r.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Reason *</span><input name="reason" required></label>
+    <button class="btn btn-danger" type="submit">Reverse receipt</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header">
+  <h1>{{ institution.legal_name }}</h1>
+  <p class="muted">{{ institution.office_address or '' }} · Tel {{ institution.phone_primary or '' }}</p>
+</div>
+<p>{{ today|ghdate }}</p>
+{% set links = loan.application.guarantee_links if loan.application else [] %}
+{% for link in links %}
+<p><strong>{{ link.guarantor.full_name }}</strong><br>
+{{ link.guarantor.residence or '' }}<br>{{ link.guarantor.phone or '' }}</p>
+{% endfor %}
+<h2>DEMAND ON GUARANTOR</h2>
+<p>Dear Guarantor,</p>
+<p>You executed a guarantee in respect of the loan facility
+{{ loan.loan_number }} granted to {{ loan.customer.full_name }}. The borrower
+has defaulted and the facility is {{ loan.days_overdue(today) }} days in
+arrears. Pursuant to your undertaking, demand is hereby made on you for
+payment of the outstanding balance below within seven (7) days.</p>
+{% include "pdf/_arrears_summary.html" %}
+<p>Yours faithfully,<br><br>____________________________<br>
+{{ institution.legal_name }}</p>
+</body></html>

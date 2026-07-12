@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_nav %}
+{% block content %}
+<h1>Loan applications</h1>
+<p>
+  <a class="btn" href="{{ url_for('applications.new') }}">New application</a>
+  <a class="btn btn-secondary" href="{{ url_for('customers.blank_application_form_docx') }}">Blank form (Word)</a>
+</p>
+<form method="get" class="inline">
+  <select name="status">
+    <option value="">All statuses</option>
+    {% for s in statuses %}<option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
+<table>
+  <tr><th>Number</th><th>Customer</th><th>Product</th><th class="num">Requested</th><th class="num">Approved</th><th>Status</th><th>Date</th></tr>
+  {% for a in pagination.items %}
+  <tr>
+    <td><a href="{{ url_for('applications.detail', app_id=a.id) }}">{{ a.application_number }}</a></td>
+    <td>{{ a.customer.full_name }}</td>
+    <td>{{ a.product.name }}</td>
+    <td class="num">{{ a.amount_requested|cedi }}</td>
+    <td class="num">{{ a.approved_amount|cedi if a.approved_amount else '—' }}</td>
+    <td><span class="badge">{{ a.status }}</span></td>
+    <td>{{ a.application_date|ghdate }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{{ pagination_nav(pagination, 'applications.index', status=status) }}
+{% endblock %}

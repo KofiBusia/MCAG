@@ -1,0 +1,10 @@
+<div class="header">
+  <h1>{{ institution.legal_name }}</h1>
+  <p class="muted">{{ institution.office_address or '' }}
+    {% if institution.digital_address %}({{ institution.digital_address }}){% endif %} ·
+    Tel {{ institution.phone_primary or '' }}</p>
+</div>
+<p>{{ today|ghdate }}</p>
+<p><strong>{{ loan.customer.full_name }}</strong><br>
+{{ loan.customer.residential_location or '' }}<br>
+{{ loan.customer.phone_primary or '' }}</p>

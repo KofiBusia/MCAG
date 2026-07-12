@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Expenses</h1>
+{% if current_user.can('post_journal') %}
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Date</span><input type="date" name="expense_date"></label>
+    <label class="field"><span>Expense account *</span>
+      <select name="account_id" required>
+        {% for a in accounts %}<option value="{{ a.id }}">{{ a.code }} {{ a.name }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Amount (GH¢) *</span><input type="number" step="0.01" name="amount" required></label>
+    <label class="field"><span>Paid from</span>
+      <select name="paid_from"><option value="cash">Cash</option><option value="bank">Bank</option></select></label>
+    <label class="field"><span>Payee</span><input name="payee"></label>
+    <label class="field"><span>Reference</span><input name="reference"></label>
+    <label class="field field-wide"><span>Description *</span><input name="description" required></label>
+    <div class="field"><button class="btn" type="submit">Record expense</button></div>
+  </form>
+</div>
+{% endif %}
+<table>
+  <tr><th>Date</th><th>Account</th><th>Description</th><th>Payee</th><th class="num">Amount</th><th>By</th></tr>
+  {% for e in expenses %}
+  <tr><td>{{ e.expense_date|ghdate }}</td><td>{{ e.account.name }}</td><td>{{ e.description }}</td>
+      <td>{{ e.payee or '—' }}</td><td class="num">{{ e.amount|cedi }}</td>
+      <td>{{ e.recorded_by.full_name }}</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

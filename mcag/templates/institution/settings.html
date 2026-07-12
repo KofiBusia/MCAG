@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Institution settings</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <fieldset>
+      <legend>Sensitive optional fields (ethnicity, religion, worship)</legend>
+      <p class="note field-wide">Disabled by default and always excluded from
+        credit scoring. If enabled, a reason must be recorded and access is
+        restricted.</p>
+      <label class="field-check"><input type="checkbox" name="sensitive_fields_enabled" value="1"
+        {% if inst.setting('sensitive_fields_enabled') %}checked{% endif %}><span>Enable sensitive optional fields</span></label>
+      <label class="field field-wide"><span>Reason for enabling</span>
+        <input name="sensitive_fields_reason" value="{{ inst.setting('sensitive_fields_reason', '') }}"></label>
+    </fieldset>
+    <fieldset>
+      <legend>Provisioning rates (% of outstanding principal)</legend>
+      {% for key, label, lo, hi in C.ARREARS_BUCKETS %}
+      <label class="field"><span>{{ label }}</span>
+        <input name="prov_{{ key }}" type="number" step="0.1" min="0" max="100"
+               value="{{ inst.setting('provision_rates', {}).get(key, C.DEFAULT_PROVISION_RATES[key]) }}"></label>
+      {% endfor %}
+    </fieldset>
+    <fieldset>
+      <legend>Penalty compliance limit</legend>
+      <label class="field"><span>Maximum penalty rate (% per day)</span>
+        <input name="penalty_max_daily_percent" type="number" step="0.01"
+               value="{{ inst.setting('penalty_max_daily_percent', '1') }}"></label>
+      <p class="note field-wide">Products configured above this limit raise a
+        compliance warning.</p>
+    </fieldset>
+    <fieldset>
+      <legend>MCAG reporting</legend>
+      <label class="field"><span>Region (for MRT return)</span>
+        <select name="mrt_region">
+          <option value="">— select —</option>
+          {% for region in C.GHANA_REGIONS %}
+          <option value="{{ region }}" {% if inst.setting('mrt_region') == region %}selected{% endif %}>{{ region }}</option>
+          {% endfor %}
+        </select></label>
+    </fieldset>
+    <div class="field-wide"><button class="btn" type="submit">Save settings</button></div>
+  </form>
+</div>
+{% endblock %}

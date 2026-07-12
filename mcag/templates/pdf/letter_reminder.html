@@ -1,0 +1,12 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+{% include "pdf/_letter_head.html" %}
+<h2>PAYMENT REMINDER</h2>
+<p>Dear {{ loan.customer.full_name }},</p>
+<p>This is a friendly reminder that your loan {{ loan.loan_number }} has an
+instalment that is now due or overdue. Kindly make payment at our office or to
+your assigned officer as soon as possible.</p>
+{% include "pdf/_arrears_summary.html" %}
+<p>If you have already paid, please disregard this notice. Thank you.</p>
+<p>Yours faithfully,<br><br>____________________________<br>
+{{ institution.legal_name }}</p>
+</body></html>

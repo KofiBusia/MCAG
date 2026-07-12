@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Collection zones</h1>
+<div class="warning-box">A collection zone is a field operational area (zone,
+market, route). It is <strong>not</strong> a branch or separate business office.</div>
+{% if current_user.can('manage_settings') %}
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Name *</span><input name="name" required></label>
+    <label class="field"><span>Type</span>
+      <select name="zone_type">
+        <option value="zone">Zone</option><option value="market">Market</option>
+        <option value="route">Route</option><option value="area">Field area</option>
+      </select></label>
+    <label class="field"><span>Assigned officer</span>
+      <select name="assigned_officer_id"><option value="">—</option>
+        {% for o in officers %}<option value="{{ o.id }}">{{ o.full_name }}</option>{% endfor %}
+      </select></label>
+    <label class="field field-wide"><span>Description</span><input name="description"></label>
+    <div class="field"><button class="btn" type="submit">Add zone</button></div>
+  </form>
+</div>
+{% endif %}
+<table>
+  <tr><th>Name</th><th>Type</th><th>Officer</th><th>Status</th><th></th></tr>
+  {% for z in zones %}
+  <tr><td>{{ z.name }}</td><td>{{ z.zone_type }}</td>
+      <td>{{ z.assigned_officer.full_name if z.assigned_officer else '—' }}</td>
+      <td><span class="badge {% if z.active %}badge-success{% else %}badge-danger{% endif %}">{{ 'active' if z.active else 'inactive' }}</span></td>
+      <td>{% if current_user.can('manage_settings') %}
+        <form method="post" action="{{ url_for('institution.zone_toggle', zone_id=z.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-secondary">{{ 'Deactivate' if z.active else 'Activate' }}</button>
+        </form>{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

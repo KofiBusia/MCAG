@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      {% if current_user.institution %}
+        <strong>{{ current_user.institution.display_name }}</strong>
+        <small>Micro-Credit Enterprise</small>
+      {% else %}
+        <strong>MCAG Platform</strong>
+        <small>Administration</small>
+      {% endif %}
+    </div>
+    <nav>
+      {% if current_user.is_platform_admin %}
+        <a href="{{ url_for('platform_admin.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('platform_admin.institutions') }}">Institutions</a>
+        <a href="{{ url_for('platform_admin.security_alerts') }}">Security Alerts</a>
+        <a href="{{ url_for('platform_admin.templates') }}">Document Templates</a>
+        <a href="{{ url_for('platform_admin.support') }}">Support</a>
+        <a href="{{ url_for('platform_admin.system_health') }}">System Health</a>
+      {% else %}
+        <a href="{{ url_for('dashboard.home') }}">Dashboard</a>
+        <span class="nav-section">Institution</span>
+        <a href="{{ url_for('institution.profile') }}">Institution</a>
+        {% if current_user.can('manage_users') %}<a href="{{ url_for('institution.users') }}">Users</a>{% endif %}
+        <a href="{{ url_for('institution.zones') }}">Collection Zones</a>
+        <span class="nav-section">Credit</span>
+        <a href="{{ url_for('customers.index') }}">Customers</a>
+        <a href="{{ url_for('applications.index') }}">Loan Applications</a>
+        <a href="{{ url_for('applications.guarantors') }}">Guarantors</a>
+        <a href="{{ url_for('applications.collateral_register') }}">Collateral</a>
+        <a href="{{ url_for('products.index') }}">Loan Products</a>
+        <span class="nav-section">Operations</span>
+        <a href="{{ url_for('loans.disbursements') }}">Disbursements</a>
+        <a href="{{ url_for('loans.index') }}">Active Loans</a>
+        <a href="{{ url_for('collections.index') }}">Collections</a>
+        <a href="{{ url_for('collections.field') }}">Field Collections</a>
+        <a href="{{ url_for('collections.receipts') }}">Receipts</a>
+        <a href="{{ url_for('collections.cashbook') }}">Cashbook</a>
+        <a href="{{ url_for('arrears.index') }}">Arrears</a>
+        <a href="{{ url_for('arrears.recovery') }}">Recovery</a>
+        <span class="nav-section">Finance</span>
+        <a href="{{ url_for('accounting.accounts') }}">Accounting</a>
+        <a href="{{ url_for('accounting.funding') }}">Funding Register</a>
+        <span class="nav-section">Compliance</span>
+        <a href="{{ url_for('compliance.complaints') }}">Complaints</a>
+        <a href="{{ url_for('compliance.credit_bureau') }}">Credit Bureau</a>
+        <a href="{{ url_for('compliance.alerts') }}">Fraud Alerts</a>
+        <a href="{{ url_for('compliance.data_protection') }}">Data Protection</a>
+        <span class="nav-section">Reports</span>
+        <a href="{{ url_for('reports.mcag_returns') }}">MCAG Returns</a>
+        <a href="{{ url_for('reports.staff_performance') }}">Staff Performance</a>
+        <a href="{{ url_for('reports.arrears_register') }}">Arrears Register</a>
+        {% if current_user.can('inspect') %}<a href="{{ url_for('reports.inspection') }}">Inspection Mode</a>{% endif %}
+        {% if current_user.can('view_audit_logs') %}<a href="{{ url_for('compliance.audit_logs') }}">Audit Logs</a>{% endif %}
+        <a href="{{ url_for('institution.support') }}">Support</a>
+      {% endif %}
+    </nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div>{% block page_title %}{% endblock %}</div>
+      <div class="user-info">
+        <span>{{ current_user.full_name }} <em>({{ current_user.role_label }})</em></span>
+        <a href="{{ url_for('auth.change_password') }}">Password</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm">Sign out</button>
+        </form>
+      </div>
+    </header>
+    <main class="content">
+      {% include "_flash.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% else %}
+<main class="auth-page">
+  {% include "_flash.html" %}
+  {% block auth_content %}{% endblock %}
+</main>
+{% endif %}
+</body>
+</html>

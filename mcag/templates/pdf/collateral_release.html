@@ -1,0 +1,15 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header"><h1>{{ institution.legal_name }}</h1></div>
+<h2>COLLATERAL RELEASE FORM</h2>
+<p>{{ institution.legal_name }} hereby releases the collateral described below,
+all obligations secured by it having been fully discharged.</p>
+<table class="doc-table">
+  <tr><td>Collateral type</td><td>{{ record.collateral_type.replace('_',' ')|title }}</td></tr>
+  <tr><td>Description</td><td>{{ record.description }}</td></tr>
+  <tr><td>Owner</td><td>{{ record.owner_name or '' }}</td></tr>
+  <tr><td>Registry reference</td><td>{{ record.collateral_registry_reference or '—' }}</td></tr>
+  <tr><td>Release date</td><td>{{ record.release_date|ghdate if record.release_date else '____________' }}</td></tr>
+</table>
+<p>Released by: ______________________ Signature: ____________ Date: ________</p>
+<p>Received by (owner): ______________ Signature: ____________ Date: ________</p>
+</body></html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Arrears register (as of {{ portfolio.as_of|ghdate }})</h1>
+<table>
+  <tr><th>Loan</th><th>Customer</th><th>Officer</th><th class="num">Days overdue</th>
+      <th class="num">Principal outstanding</th><th>Bucket</th></tr>
+  {% for d in portfolio.detail if d.days_overdue > 0 %}
+  <tr>
+    <td>{{ d.loan.loan_number }}</td>
+    <td>{{ d.loan.customer.full_name }}</td>
+    <td>{{ d.loan.officer.full_name if d.loan.officer else '—' }}</td>
+    <td class="num">{{ d.days_overdue }}</td>
+    <td class="num">{{ d.principal_outstanding|cedi }}</td>
+    <td>{{ d.bucket }}</td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="note">No loans in arrears.</td></tr>{% endfor %}
+</table>
+{% endblock %}

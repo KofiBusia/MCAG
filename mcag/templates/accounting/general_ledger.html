@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>General ledger</h1>
+<form method="get" class="inline">
+  <select name="account_id">
+    <option value="">— select account —</option>
+    {% for a in accounts %}
+    <option value="{{ a.id }}" {% if account and account.id == a.id %}selected{% endif %}>{{ a.code }} {{ a.name }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-sm" type="submit">View</button>
+</form>
+{% if account %}
+<h2>{{ account.code }} — {{ account.name }}</h2>
+<table>
+  <tr><th>Date</th><th>Journal</th><th>Description</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+  {% for line in lines %}
+  <tr>
+    <td>{{ line.entry.entry_date|ghdate }}</td>
+    <td>{{ line.entry.journal_number }}</td>
+    <td>{{ line.entry.description }}</td>
+    <td class="num">{{ line.debit|cedi if line.debit else '' }}</td>
+    <td class="num">{{ line.credit|cedi if line.credit else '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

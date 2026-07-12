@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loan ledger — {{ loan.loan_number }}</h1>
+<p class="note">The ledger is the source of truth for statements, arrears,
+financial reports, accounting entries and MCAG returns.</p>
+<table>
+  <tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Debit</th><th class="num">Credit</th><th>By</th></tr>
+  {% for e in entries %}
+  <tr>
+    <td>{{ e.entry_date|ghdate }}</td>
+    <td>{{ e.entry_type.replace('_',' ') }}</td>
+    <td>{{ e.description }}</td>
+    <td class="num">{{ e.debit|cedi if e.debit else '' }}</td>
+    <td class="num">{{ e.credit|cedi if e.credit else '' }}</td>
+    <td>{{ e.created_by.full_name if e.created_by else '' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<div class="stats">
+  <div class="stat"><div class="label">Principal outstanding</div><div class="value">{{ loan.principal_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Interest outstanding</div><div class="value">{{ loan.interest_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Penalties outstanding</div><div class="value">{{ loan.penalties_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Total outstanding</div><div class="value">{{ loan.total_outstanding|cedi }}</div></div>
+</div>
+{% endblock %}

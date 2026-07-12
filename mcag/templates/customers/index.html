@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_nav %}
+{% block content %}
+<h1>Customers</h1>
+<p>
+  <a class="btn" href="{{ url_for('customers.new') }}">Register customer</a>
+  <a class="btn btn-secondary" href="{{ url_for('customers.blank_application_form_docx') }}">Blank application form (Word)</a>
+</p>
+<form method="get" class="inline">
+  <input name="q" value="{{ q }}" placeholder="Search name, number, phone">
+  <button class="btn btn-sm" type="submit">Search</button>
+</form>
+<table>
+  <tr><th>Number</th><th>Name</th><th>Ghana Card</th><th>Phone</th><th>Zone</th><th>Registered</th></tr>
+  {% for c in pagination.items %}
+  <tr>
+    <td><a href="{{ url_for('customers.detail', customer_id=c.id) }}">{{ c.customer_number }}</a></td>
+    <td>{{ c.full_name }}</td>
+    <td>{{ c.masked_ghana_card }}</td>
+    <td>{{ c.phone_primary or '—' }}</td>
+    <td>{{ c.collection_zone.name if c.collection_zone else '—' }}</td>
+    <td>{{ c.created_at|ghdate }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{{ pagination_nav(pagination, 'customers.index', q=q) }}
+{% endblock %}

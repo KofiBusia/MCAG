@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loan products</h1>
+{% if current_user.can('manage_products') %}
+<p><a class="btn" href="{{ url_for('products.new') }}">New product</a></p>
+{% endif %}
+<table>
+  <tr><th>Code</th><th>Name</th><th>Amount range</th><th>Tenure</th><th>Rate</th><th>Method</th><th>Status</th></tr>
+  {% for p in products %}
+  <tr>
+    <td><a href="{{ url_for('products.detail', product_id=p.id) }}">{{ p.code }}</a></td>
+    <td>{{ p.name }}</td>
+    <td>{{ p.min_amount|cedi }} – {{ p.max_amount|cedi }}</td>
+    <td>{{ p.min_tenure }}–{{ p.max_tenure }} {{ p.repayment_frequency }}</td>
+    <td>{{ p.min_rate }}–{{ p.max_rate }}% {{ p.rate_period }}</td>
+    <td>{{ p.interest_method.replace('_',' ') }}</td>
+    <td><span class="badge {% if p.active %}badge-success{% else %}badge-danger{% endif %}">{{ 'active' if p.active else 'inactive' }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

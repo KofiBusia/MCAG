@@ -1,0 +1,6 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+{% include "applications/_agreement_body.html" %}
+<p class="muted">Agreement generated {{ agreement.created_at }} —
+{{ institution.legal_name }} appears as lender in every section. Immutable
+record retained by the system.</p>
+</body></html>

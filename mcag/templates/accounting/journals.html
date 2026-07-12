@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Journals</h1>
+{% if current_user.can('post_journal') %}
+<div class="card">
+  <h2>Post manual journal</h2>
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Date</span><input type="date" name="entry_date"></label>
+    <label class="field field-wide"><span>Description</span><input name="description" required></label>
+    {% for i in range(1, 5) %}
+    <label class="field"><span>Account {{ i }}</span>
+      <select name="account_id_{{ i }}"><option value="">—</option>
+        {% for a in accounts %}<option value="{{ a.id }}">{{ a.code }} {{ a.name }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Debit {{ i }}</span><input type="number" step="0.01" name="debit_{{ i }}"></label>
+    <label class="field"><span>Credit {{ i }}</span><input type="number" step="0.01" name="credit_{{ i }}"></label>
+    {% endfor %}
+    <p class="note field-wide">Debits must equal credits. Loan transactions post
+      automatically; use manual journals for adjustments only.</p>
+    <div class="field"><button class="btn" type="submit">Post journal</button></div>
+  </form>
+</div>
+{% endif %}
+<table>
+  <tr><th>Number</th><th>Date</th><th>Description</th><th>Source</th><th class="num">Debits</th><th class="num">Credits</th><th>Posted by</th></tr>
+  {% for j in journals %}
+  <tr>
+    <td>{{ j.journal_number }}</td><td>{{ j.entry_date|ghdate }}</td>
+    <td>{{ j.description }}</td><td><span class="badge">{{ j.source }}</span></td>
+    <td class="num">{{ j.total_debits|cedi }}</td><td class="num">{{ j.total_credits|cedi }}</td>
+    <td>{{ j.posted_by.full_name if j.posted_by else 'system' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

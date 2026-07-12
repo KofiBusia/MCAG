@@ -1,0 +1,17 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header"><h1>{{ institution.legal_name }}</h1></div>
+<h2>COLLATERAL REGISTRATION CHECKLIST</h2>
+<p>Collateral: {{ record.description }} ({{ record.collateral_type.replace('_',' ')|title }})</p>
+<table class="doc-table">
+  <tr><th>Item</th><th>Complete (✓/✗)</th></tr>
+  <tr><td>Proof of ownership obtained ({{ record.proof_of_ownership or 'specify' }})</td><td></td></tr>
+  <tr><td>Valuation report on file</td><td></td></tr>
+  <tr><td>Photographs on file</td><td></td></tr>
+  <tr><td>Encumbrance search completed</td><td></td></tr>
+  <tr><td>Insurance confirmed ({{ record.insurance_details or 'n/a' }})</td><td></td></tr>
+  <tr><td>Registered at Collateral Registry (ref: {{ record.collateral_registry_reference or '________' }})</td><td></td></tr>
+  <tr><td>Registration date recorded ({{ record.registration_date|ghdate if record.registration_date else '________' }})</td><td></td></tr>
+</table>
+<p>Checked by: ______________________ Signature: ____________ Date: ________</p>
+<p>Approved by: _____________________ Signature: ____________ Date: ________</p>
+</body></html>

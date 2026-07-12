@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Security alerts — failed and locked logins</h1>
+<table>
+  <tr><th>Time</th><th>Email</th><th>Event</th><th>IP</th><th>User agent</th></tr>
+  {% for e in events %}
+  <tr><td>{{ e.occurred_at }}</td><td>{{ e.email_attempted }}</td>
+      <td><span class="badge badge-danger">{{ e.event }}</span></td>
+      <td>{{ e.ip_address }}</td><td class="note">{{ e.user_agent }}</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

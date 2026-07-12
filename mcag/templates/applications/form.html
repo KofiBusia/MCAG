@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>New loan application</h1>
+<div class="card">
+<form method="post" class="grid-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="field"><span>Customer *</span>
+    <select name="customer_id" required>
+      <option value="">— select —</option>
+      {% for c in customers %}<option value="{{ c.id }}">{{ c.customer_number }} — {{ c.full_name }}</option>{% endfor %}
+    </select></label>
+  <label class="field"><span>Loan product *</span>
+    <select name="product_id" required>
+      <option value="">— select —</option>
+      {% for p in products %}<option value="{{ p.id }}">{{ p.name }} ({{ p.min_amount|cedi }}–{{ p.max_amount|cedi }})</option>{% endfor %}
+    </select></label>
+  <label class="field field-wide"><span>Purpose of loan *</span><input name="loan_purpose" required></label>
+  <label class="field"><span>Sector</span>
+    <select name="purpose_sector">{% for s in sectors %}<option>{{ s }}</option>{% endfor %}</select></label>
+  <label class="field"><span>Amount requested (GH¢) *</span><input type="number" step="0.01" name="amount_requested" required></label>
+  <label class="field"><span>Proposed tenure (periods) *</span><input type="number" name="proposed_tenure" required></label>
+  <label class="field"><span>Proposed payment method</span>
+    <select name="proposed_payment_method">{% for v, l in payment_methods %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></label>
+  <label class="field field-wide"><span>Proposed collateral (security)</span><input name="proposed_collateral"></label>
+  <label class="field"><span>Application fee paid (GH¢)</span><input type="number" step="0.01" name="application_fee_paid" value="0"></label>
+  <label class="field"><span>Signed by</span>
+    <select name="signed_by"><option value="signature">Signature</option><option value="thumbprint">Thumbprint</option></select></label>
+  <label class="field-check field-wide">
+    <input type="checkbox" name="declaration_accepted" value="1" required>
+    <span>The applicant declares the information supplied is true and correct,
+      authorises verification, accepts the application fee is non-refundable if
+      declined, and understands that applying is not a guarantee of approval.</span>
+  </label>
+  <div class="field-wide"><button class="btn" type="submit">Submit application</button></div>
+</form>
+</div>
+{% endblock %}

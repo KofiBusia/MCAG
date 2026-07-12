@@ -1,0 +1,14 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+{% include "pdf/_letter_head.html" %}
+<h2>FIRST DEMAND LETTER</h2>
+<p>Dear {{ loan.customer.full_name }},</p>
+<p>Despite earlier reminders, your loan {{ loan.loan_number }} remains in
+arrears. Formal demand is hereby made for immediate payment of the overdue
+amount below within seven (7) days of the date of this letter.</p>
+{% include "pdf/_arrears_summary.html" %}
+<p>Failure to regularise the account may lead to further lawful recovery
+action, including a report to a licensed credit bureau as disclosed in your
+loan agreement.</p>
+<p>Yours faithfully,<br><br>____________________________<br>
+{{ institution.legal_name }}</p>
+</body></html>

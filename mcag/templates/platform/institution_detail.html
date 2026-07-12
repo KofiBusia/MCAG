@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ inst.legal_name }}</h1>
+<p><span class="badge {% if inst.status == 'active' %}badge-success{% else %}badge-warning{% endif %}">{{ inst.status }}</span>
+{% if inst.status_reason %} — {{ inst.status_reason }}{% endif %}</p>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Usage</h2>
+    <table>
+      <tr><td>Staff users</td><td class="num">{{ usage.users }}</td></tr>
+      <tr><td>Customers</td><td class="num">{{ usage.customers }}</td></tr>
+      <tr><td>Loans</td><td class="num">{{ usage.loans }}</td></tr>
+    </table>
+    <p class="note">The platform administrator does not view or edit an
+      institution's customers, loans, repayments or accounting records.
+      Any exceptional access is logged in the audit trail.</p>
+  </div>
+  <div class="card">
+    <h2>Account status</h2>
+    <form method="post" action="{{ url_for('platform_admin.institution_status', inst_id=inst.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Reason (for suspension/rejection)</span><input name="reason"></label>
+      <p>
+        {% if inst.status == 'pending' %}
+          <button class="btn" name="action" value="approve">Approve</button>
+          <button class="btn btn-danger" name="action" value="reject">Reject</button>
+        {% elif inst.status == 'active' %}
+          <button class="btn btn-danger" name="action" value="suspend">Suspend</button>
+        {% else %}
+          <button class="btn" name="action" value="reactivate">Reactivate</button>
+        {% endif %}
+      </p>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Subscriptions</h2>
+  <table>
+    <tr><th>Plan</th><th class="num">Amount</th><th>Start</th><th>End</th><th>Status</th></tr>
+    {% for s in subscriptions %}
+    <tr><td>{{ s.plan_name }}</td><td class="num">{{ s.amount|cedi }}</td>
+        <td>{{ s.start_date|ghdate }}</td><td>{{ s.end_date|ghdate }}</td><td>{{ s.status }}</td></tr>
+    {% endfor %}
+  </table>
+  <form method="post" action="{{ url_for('platform_admin.subscription_add', inst_id=inst.id) }}" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Plan</span><input name="plan_name" value="Standard"></label>
+    <label class="field"><span>Amount (GH¢)</span><input name="amount" type="number" step="0.01"></label>
+    <label class="field"><span>Start date</span><input type="date" name="start_date" required></label>
+    <label class="field"><span>End date</span><input type="date" name="end_date"></label>
+    <div class="field"><button class="btn" type="submit">Add subscription</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Trial balance as at {{ to_date|ghdate }}</h1>
+<form method="get" class="inline">
+  <input type="date" name="to" value="{{ to_date }}"><button class="btn btn-sm">Change date</button>
+</form>
+<table>
+  <tr><th>Code</th><th>Account</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+  {% for r in rows %}
+  <tr><td>{{ r.account.code }}</td><td>{{ r.account.name }}</td>
+      <td class="num">{{ r.debit|cedi if r.debit else '' }}</td>
+      <td class="num">{{ r.credit|cedi if r.credit else '' }}</td></tr>
+  {% endfor %}
+  <tr><th colspan="2">Totals</th><th class="num">{{ totals.debit|cedi }}</th><th class="num">{{ totals.credit|cedi }}</th></tr>
+</table>
+{% if totals.debit != totals.credit %}
+<div class="flash flash-danger">Trial balance is out of balance!</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_nav %}
+{% block content %}
+<h1>Loans</h1>
+<form method="get" class="inline">
+  <select name="status">
+    <option value="">All statuses</option>
+    {% for s in ['Active','Pending Disbursement','Closed','Written Off','Restructured'] %}
+    <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
+<table>
+  <tr><th>Loan</th><th>Customer</th><th>Product</th><th class="num">Principal</th>
+      <th class="num">Outstanding</th><th class="num">Days overdue</th><th>Status</th></tr>
+  {% for l in pagination.items %}
+  <tr>
+    <td><a href="{{ url_for('loans.detail', loan_id=l.id) }}">{{ l.loan_number }}</a></td>
+    <td>{{ l.customer.full_name }}</td>
+    <td>{{ l.product.name }}</td>
+    <td class="num">{{ l.principal|cedi }}</td>
+    <td class="num">{{ l.total_outstanding|cedi }}</td>
+    <td class="num">{{ l.days_overdue() }}</td>
+    <td><span class="badge {% if l.status=='Active' %}badge-success{% elif l.status=='Written Off' %}badge-danger{% endif %}">{{ l.status }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{{ pagination_nav(pagination, 'loans.index', status=status) }}
+{% endblock %}

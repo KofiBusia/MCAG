@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Credit bureau register</h1>
+<p class="note">Designed so a live bureau integration can be added later — no
+simulated integration is included. Consent must be recorded before an enquiry.</p>
+{% if current_user.can('compliance') %}
+<p><a class="btn btn-secondary" href="{{ url_for('compliance.bureau_export') }}">Export submission file (CSV)</a></p>
+{% endif %}
+{% if current_user.can('edit') %}
+<div class="card">
+  <h2>Record bureau enquiry</h2>
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Customer *</span>
+      <select name="customer_id" required>
+        {% for c in customers %}<option value="{{ c.id }}">{{ c.customer_number }} — {{ c.full_name }}</option>{% endfor %}
+      </select></label>
+    <label class="field-check"><input type="checkbox" name="consent_given" value="1"><span>Customer consent recorded *</span></label>
+    <label class="field"><span>Consent date</span><input type="date" name="consent_date"></label>
+    <label class="field"><span>Bureau name *</span><input name="bureau_name" required></label>
+    <label class="field"><span>Enquiry date</span><input type="date" name="enquiry_date"></label>
+    <label class="field"><span>Report reference</span><input name="report_reference"></label>
+    <label class="field field-wide"><span>Existing facilities</span><textarea name="existing_facilities" rows="2"></textarea></label>
+    <label class="field"><span>Outstanding balances (GH¢)</span><input type="number" step="0.01" name="outstanding_balances"></label>
+    <label class="field"><span>Arrears (GH¢)</span><input type="number" step="0.01" name="arrears"></label>
+    <label class="field-check"><input type="checkbox" name="defaults_found" value="1"><span>Defaults found</span></label>
+    <label class="field field-wide"><span>Officer comments</span><input name="officer_comments"></label>
+    <label class="field field-wide"><span>Impact on decision</span><input name="impact_on_decision"></label>
+    <div class="field"><button class="btn" type="submit">Record enquiry</button></div>
+  </form>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Enquiries</h2>
+  <table>
+    <tr><th>Date</th><th>Customer</th><th>Bureau</th><th>Reference</th>
+        <th class="num">Outstanding</th><th>Defaults</th><th>Impact</th></tr>
+    {% for e in enquiries %}
+    <tr>
+      <td>{{ e.enquiry_date|ghdate }}</td><td>{{ e.customer.full_name }}</td>
+      <td>{{ e.bureau_name }}</td><td>{{ e.report_reference or '—' }}</td>
+      <td class="num">{{ e.outstanding_balances|cedi if e.outstanding_balances else '—' }}</td>
+      <td>{{ 'Yes' if e.defaults_found else 'No' }}</td>
+      <td>{{ e.impact_on_decision or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Submission history</h2>
+  <table>
+    <tr><th>Period</th><th>Bureau</th><th class="num">Records</th><th>Status</th><th>Submitted</th><th>By</th></tr>
+    {% for s in submissions %}
+    <tr><td>{{ s.period }}</td><td>{{ s.bureau_name }}</td><td class="num">{{ s.record_count }}</td>
+        <td><span class="badge">{{ s.status }}</span></td><td>{{ s.submitted_at }}</td>
+        <td>{{ s.submitted_by.full_name if s.submitted_by else '—' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>MCAG return {{ r.period }} <span class="badge">{{ r.status }}</span></h1>
+<p>
+  {% if current_user.can('export_reports') %}
+  <a class="btn" href="{{ url_for('reports.mcag_return_export', return_id=r.id) }}">Export to Excel (official MRT workbook)</a>
+  {% endif %}
+</p>
+{% if validation %}
+<div class="flash flash-danger">
+  <strong>Validation errors — correct source transactions and regenerate:</strong>
+  <ul>{% for v in validation %}<li>{{ v }}</li>{% endfor %}</ul>
+</div>
+{% else %}
+<div class="flash flash-success">All reconciliation checks passed.</div>
+{% endif %}
+
+{% if data %}
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Income statement (quarter)</h2>
+    <table>
+      {% for k, v in data.income_statement.items() %}
+      <tr><td>{{ k.replace('_',' ')|title }}</td><td class="num">{{ v|cedi }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Balance sheet</h2>
+    <table>
+      {% for k, v in data.balance_sheet.items() %}
+      <tr><td>{{ k.replace('_',' ')|title }}</td><td class="num">{{ v|cedi }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Portfolio ageing</h2>
+    <table>
+      <tr><th>Bucket</th><th class="num">Loans</th><th class="num">Value</th><th class="num">Provision</th></tr>
+      {% for key, b in data.portfolio.ageing.items() %}
+      <tr><td>{{ b.label }}</td><td class="num">{{ b.count }}</td>
+          <td class="num">{{ b.value|cedi }}</td><td class="num">{{ b.actual_prov|cedi }}</td></tr>
+      {% endfor %}
+      <tr><td>Rescheduled</td><td class="num">{{ data.portfolio.rescheduled.count }}</td>
+          <td class="num">{{ data.portfolio.rescheduled.value|cedi }}</td><td></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Sector distribution</h2>
+    <table>
+      <tr><th>Sector</th><th class="num">Loans</th><th class="num">Value</th></tr>
+      {% for sector, s in data.sectors.items() %}
+      <tr><td>{{ sector }}</td><td class="num">{{ s.count }}</td><td class="num">{{ s.value|cedi }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+<div class="card">
+  <h2>Client outreach &amp; staff</h2>
+  <table>
+    {% for k, v in data.outreach.items() %}
+    <tr><td>{{ k.replace('_',' ')|title }}</td><td class="num">{{ v }}</td></tr>
+    {% endfor %}
+    {% for k, v in data.staff.items() %}
+    <tr><td>Staff — {{ k.replace('_',' ')|title }}</td><td class="num">{{ v }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if current_user.can('compliance') %}
+<div class="card">
+  <h2>Lock &amp; submission</h2>
+  <form method="post" action="{{ url_for('reports.mcag_return_lock', return_id=r.id) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if r.status == 'draft' %}
+    <button class="btn btn-warning" name="action" value="lock">Lock reporting period</button>
+    {% elif r.status == 'locked' %}
+    <label class="field"><span>Proof of submission (upload)</span><input type="file" name="proof"></label>
+    <button class="btn" name="action" value="submit">Mark as submitted to MCAG</button>
+    {% else %}
+    <p class="note">Submitted {{ r.submitted_at }}.
+      {% if r.proof_document_id %}<a href="{{ url_for('documents.download', document_id=r.proof_document_id) }}">Proof of submission</a>{% endif %}</p>
+    {% endif %}
+  </form>
+</div>
+{% endif %}
+{% endblock %}

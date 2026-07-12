@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>MCAG Members Reporting Template returns</h1>
+<p class="note">Returns are generated automatically from the loan ledger,
+accounting records and customer records — totals are never typed by hand.
+Exports fill the official MCAG-MRT_V2022_v8 workbook with its validation
+formulas intact.</p>
+{% if current_user.can('compliance') %}
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Year</span>
+      <input type="number" name="year" value="{{ today.year }}" min="2020" max="2100"></label>
+    <label class="field"><span>Reporting quarter</span>
+      <select name="quarter">{% for q in quarters %}<option>{{ q }}</option>{% endfor %}</select></label>
+    <div class="field"><button class="btn" type="submit">Generate return</button></div>
+  </form>
+</div>
+{% endif %}
+<table>
+  <tr><th>Period</th><th>Status</th><th>Generated</th><th>Submitted</th><th></th></tr>
+  {% for r in returns %}
+  <tr>
+    <td>{{ r.period }}</td>
+    <td><span class="badge {% if r.status=='submitted' %}badge-success{% elif r.status=='locked' %}badge-warning{% endif %}">{{ r.status }}</span></td>
+    <td>{{ r.generated_at|ghdate if r.generated_at else '—' }} {{ 'by ' + r.generated_by.full_name if r.generated_by else '' }}</td>
+    <td>{{ r.submitted_at|ghdate if r.submitted_at else '—' }} {{ 'by ' + r.submitted_by.full_name if r.submitted_by else '' }}</td>
+    <td><a href="{{ url_for('reports.mcag_return_detail', return_id=r.id) }}">Open</a></td>
+  </tr>
+  {% else %}<tr><td colspan="5" class="note">No returns generated yet.</td></tr>{% endfor %}
+</table>
+{% endblock %}

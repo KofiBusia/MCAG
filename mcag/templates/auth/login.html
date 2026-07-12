@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block auth_content %}
+<div class="auth-card">
+  <h1>{{ APP_NAME }}</h1>
+  <p class="note">Staff sign-in only. Customers do not have accounts on this system.</p>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Email</span>
+      <input type="email" name="email" required autofocus></label>
+    <label class="field"><span>Password</span>
+      <input type="password" name="password" required></label>
+    <button class="btn" type="submit">Sign in</button>
+    <p class="note"><a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a></p>
+  </form>
+</div>
+{% endblock %}

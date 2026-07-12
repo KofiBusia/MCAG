@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Inspection mode (read-only)</h1>
+<p class="note">Registers for regulatory and audit inspection. All exports are
+logged in the audit trail.</p>
+<table>
+  <tr><th>Register</th><th class="num">Records</th><th></th></tr>
+  {% for key, (title, model) in registers.items() %}
+  <tr>
+    <td>{{ title }}</td>
+    <td class="num">{{ counts[key] }}</td>
+    <td><a href="{{ url_for('reports.inspection_export', register=key) }}">Export CSV</a></td>
+  </tr>
+  {% endfor %}
+</table>
+<p>
+  Also available:
+  <a href="{{ url_for('institution.profile') }}">Institution profile</a> ·
+  <a href="{{ url_for('reports.arrears_register') }}">Arrears register</a> ·
+  <a href="{{ url_for('collections.cashbook') }}">Cashbook</a> ·
+  <a href="{{ url_for('accounting.trial_balance_view') }}">Financial reports</a> ·
+  <a href="{{ url_for('reports.mcag_returns') }}">MCAG returns</a> ·
+  <a href="{{ url_for('compliance.credit_bureau') }}">Credit bureau records</a> ·
+  {% if current_user.can('view_audit_logs') %}<a href="{{ url_for('compliance.audit_logs') }}">Audit logs</a> ·{% endif %}
+  <a href="{{ url_for('compliance.data_protection') }}">Data protection records</a>
+</p>
+{% endblock %}

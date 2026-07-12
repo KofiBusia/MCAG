@@ -1,0 +1,21 @@
+<html><head>{% include "pdf/_base.html" %}</head><body>
+<div class="header">
+  <h1>{{ institution.legal_name }}</h1>
+  <p class="muted">{{ institution.office_address or '' }} · Tel {{ institution.phone_primary or '' }}</p>
+</div>
+<h2 class="center">OFFICIAL RECEIPT {{ r.receipt_number }}
+  {% if r.reversed %}(REVERSED){% endif %}</h2>
+<table class="doc-table">
+  <tr><td>Date paid</td><td>{{ r.paid_at|ghdate }}</td></tr>
+  <tr><td>Received from</td><td>{{ r.loan.customer.full_name }} ({{ r.loan.customer.customer_number }})</td></tr>
+  <tr><td>Loan number</td><td>{{ r.loan.loan_number }}</td></tr>
+  <tr><td>Amount</td><td><strong>{{ r.amount|cedi }}</strong></td></tr>
+  <tr><td>Payment method</td><td>{{ r.method }} {{ r.external_reference or '' }}</td></tr>
+  <tr><td>Allocation</td><td>Principal {{ r.allocated_principal|cedi }} ·
+      Interest {{ r.allocated_interest|cedi }} ·
+      Penalties {{ r.allocated_penalties|cedi }}</td></tr>
+  <tr><td>Balance outstanding</td><td>{{ r.loan.total_outstanding|cedi }}</td></tr>
+  <tr><td>Collected by</td><td>{{ r.collector.full_name }}</td></tr>
+</table>
+<p>____________________________<br>Authorised signature</p>
+</body></html>

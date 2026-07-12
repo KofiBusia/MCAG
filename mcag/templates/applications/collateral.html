@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Collateral register</h1>
+<p class="note">Collateral is added from a loan application. Generate
+inspection, registration checklist and release forms per item.</p>
+<table>
+  <tr><th>Type</th><th>Description</th><th>Owner</th><th class="num">Market value</th>
+      <th class="num">Forced-sale value</th><th>Registry ref.</th><th>Status</th><th>Forms</th></tr>
+  {% for r in records %}
+  <tr>
+    <td>{{ r.collateral_type.replace('_',' ')|title }}</td>
+    <td>{{ r.description }}</td>
+    <td>{{ r.owner_name or '—' }}</td>
+    <td class="num">{{ r.estimated_market_value|cedi if r.estimated_market_value else '—' }}</td>
+    <td class="num">{{ r.forced_sale_value|cedi if r.forced_sale_value else '—' }}</td>
+    <td>{{ r.collateral_registry_reference or '—' }}</td>
+    <td><span class="badge">{{ r.enforcement_status }}</span></td>
+    <td>
+      <a href="{{ url_for('applications.collateral_form_pdf', collateral_id=r.id, form_type='inspection') }}">Inspection</a> ·
+      <a href="{{ url_for('applications.collateral_form_pdf', collateral_id=r.id, form_type='checklist') }}">Checklist</a> ·
+      <a href="{{ url_for('applications.collateral_form_pdf', collateral_id=r.id, form_type='release') }}">Release</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

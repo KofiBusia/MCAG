@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Support</h1>
+<div class="card">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Subject</span><input name="subject" required></label>
+    <label class="field"><span>Message</span><textarea name="message" rows="4" required></textarea></label>
+    <button class="btn" type="submit">Submit to platform team</button>
+  </form>
+</div>
+{% for r in requests %}
+<div class="card">
+  <h3>{{ r.subject }} <span class="badge">{{ r.status }}</span></h3>
+  <p>{{ r.message }}</p>
+  {% if r.response %}<p><strong>Response:</strong> {{ r.response }}</p>{% endif %}
+</div>
+{% endfor %}
+{% endblock %}

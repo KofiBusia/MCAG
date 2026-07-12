@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_nav %}
+{% block content %}
+<h1>Audit trail</h1>
+<p class="note">Permanent, tamper-resistant record. No user — including
+administrators — can edit or delete audit entries.</p>
+<form method="get" class="inline">
+  <input name="action" value="{{ action or '' }}" placeholder="filter by action">
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
+<table>
+  <tr><th>Time</th><th>User</th><th>Action</th><th>Record</th><th>Old value</th><th>New value</th><th>IP</th></tr>
+  {% for e in pagination.items %}
+  <tr>
+    <td>{{ e.occurred_at }}</td>
+    <td>{{ e.user_email or 'system' }}</td>
+    <td><span class="badge">{{ e.action }}</span></td>
+    <td>{{ e.record_type }}{% if e.record_id %} #{{ e.record_id }}{% endif %}</td>
+    <td class="note">{{ e.old_value|truncate(80) if e.old_value }}</td>
+    <td class="note">{{ e.new_value|truncate(80) if e.new_value }}</td>
+    <td>{{ e.ip_address }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{{ pagination_nav(pagination, 'compliance.audit_logs', action=action) }}
+{% endblock %}

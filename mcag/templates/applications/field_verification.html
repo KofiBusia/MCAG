@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Field verification — {{ app.application_number }}</h1>
+<p class="note">{{ app.customer.full_name }} · {{ app.product.name }} · {{ app.amount_requested|cedi }}</p>
+<div class="card">
+<form method="post" class="grid-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label class="field"><span>Visit date *</span><input type="date" name="visit_date" required></label>
+  <label class="field"><span>Visit time</span><input type="time" name="visit_time"></label>
+  <label class="field-check"><input type="checkbox" name="residence_visited" value="1"><span>Residence visited</span></label>
+  <label class="field-check"><input type="checkbox" name="business_visited" value="1"><span>Business visited</span></label>
+  <label class="field-check"><input type="checkbox" name="gps_consent" value="1"><span>Customer consented to GPS capture</span></label>
+  <label class="field"><span>GPS location (only stored with consent)</span><input name="gps_location" placeholder="5.6037, -0.1870"></label>
+  <label class="field"><span>Digital address</span><input name="digital_address"></label>
+  <label class="field field-wide"><span>Business activity observed</span><textarea name="business_activity_observed" rows="2"></textarea></label>
+  <label class="field field-wide"><span>Stock observed</span><textarea name="stock_observed" rows="2"></textarea></label>
+  <label class="field"><span>Employees observed</span><input type="number" name="employees_observed"></label>
+  <label class="field"><span>Estimated sales (GH¢)</span><input type="number" step="0.01" name="estimated_sales"></label>
+  <label class="field"><span>Estimated expenses (GH¢)</span><input type="number" step="0.01" name="estimated_expenses"></label>
+  <label class="field"><span>Business operating days / week</span><input type="number" name="business_operating_days"></label>
+  <label class="field"><span>Premises status</span><input name="premises_status"></label>
+  <label class="field field-wide"><span>Landlord / neighbour verification</span><textarea name="landlord_verification" rows="2"></textarea></label>
+  <label class="field field-wide"><span>Residence verification</span><textarea name="residence_verification" rows="2"></textarea></label>
+  <label class="field-check"><input type="checkbox" name="collateral_sighted" value="1"><span>Collateral sighted</span></label>
+  <label class="field field-wide"><span>Officer comments</span><textarea name="officer_comments" rows="2"></textarea></label>
+  <label class="field"><span>Recommended amount (GH¢)</span><input type="number" step="0.01" name="recommended_amount"></label>
+  <label class="field"><span>Recommended tenure</span><input type="number" name="recommended_tenure"></label>
+  <label class="field"><span>Outcome</span>
+    <select name="outcome">
+      <option value="satisfactory">Satisfactory</option>
+      <option value="unsatisfactory">Unsatisfactory</option>
+      <option value="pending">Pending</option>
+    </select></label>
+  <p class="note field-wide">Attach field visit photographs on the customer's
+    document page after saving.</p>
+  <div class="field-wide"><button class="btn" type="submit">Save field verification</button></div>
+</form>
+</div>
+{% if app.field_verifications %}
+<div class="card">
+  <h2>Previous verifications</h2>
+  <table>
+    <tr><th>Date</th><th>Officer</th><th>Outcome</th><th class="num">Recommended</th><th>Comments</th></tr>
+    {% for v in app.field_verifications %}
+    <tr><td>{{ v.visit_date|ghdate }}</td><td>{{ v.officer.full_name }}</td>
+        <td><span class="badge">{{ v.outcome }}</span></td>
+        <td class="num">{{ v.recommended_amount|cedi if v.recommended_amount else '—' }}</td>
+        <td class="note">{{ v.officer_comments }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

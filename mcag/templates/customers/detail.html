@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ customer.full_name }} <span class="badge">{{ customer.customer_number }}</span></h1>
+<p>
+  <a class="btn btn-secondary" href="{{ url_for('customers.edit', customer_id=customer.id) }}">Edit</a>
+  <a class="btn btn-secondary" href="{{ url_for('customers.application_form_docx', customer_id=customer.id) }}">Application form (Word, filled)</a>
+</p>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Personal</h2>
+    <table>
+      <tr><td>Ghana Card</td><td>{{ customer.masked_ghana_card or '—' }}</td></tr>
+      <tr><td>Sex / Age</td><td>{{ customer.sex or '—' }} / {{ customer.age if customer.age is not none else '—' }}</td></tr>
+      <tr><td>Date of birth</td><td>{{ customer.date_of_birth|ghdate }}</td></tr>
+      <tr><td>Phone</td><td>{{ customer.phone_primary or '—' }} {{ customer.phone_secondary or '' }}</td></tr>
+      <tr><td>Region / Home town</td><td>{{ customer.region or '—' }} / {{ customer.home_town or '—' }}</td></tr>
+      <tr><td>Marital status / dependants</td><td>{{ customer.marital_status or '—' }} / {{ customer.dependants if customer.dependants is not none else '—' }}</td></tr>
+      <tr><td>Residence</td><td>{{ customer.residential_location or '—' }} ({{ customer.residential_digital_address or 'no digital address' }})</td></tr>
+      <tr><td>Accommodation</td><td>{{ customer.accommodation_status or '—' }}</td></tr>
+      <tr><td>Zone</td><td>{{ customer.collection_zone.name if customer.collection_zone else '—' }}</td></tr>
+      <tr><td>Cycle number</td><td>{{ customer.cycle_number }}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Business / employment</h2>
+    <table>
+      <tr><td>Type</td><td>{{ customer.employment_type.replace('_',' ')|title }}</td></tr>
+      <tr><td>Business</td><td>{{ customer.business_name or '—' }} ({{ customer.business_type or '—' }})</td></tr>
+      <tr><td>Daily sales / expenses</td><td>{{ customer.estimated_daily_sales|cedi if customer.estimated_daily_sales else '—' }} / {{ customer.estimated_daily_expenses|cedi if customer.estimated_daily_expenses else '—' }}</td></tr>
+      <tr><td>Working capital</td><td>{{ customer.estimated_working_capital|cedi if customer.estimated_working_capital else '—' }}</td></tr>
+      <tr><td>Employer</td><td>{{ customer.employer_name or '—' }} ({{ customer.position or '—' }})</td></tr>
+      <tr><td>Net salary</td><td>{{ customer.net_monthly_salary|cedi if customer.net_monthly_salary else '—' }}</td></tr>
+      <tr><td>Bank</td><td>{{ customer.bank_name or '—' }} {{ customer.bank_account_number or '' }}</td></tr>
+      <tr><td>Mobile money</td><td>{{ customer.momo_provider or '—' }} {{ customer.momo_number or '' }}</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Loans</h2>
+  <table>
+    <tr><th>Loan</th><th class="num">Principal</th><th class="num">Outstanding</th><th>Status</th></tr>
+    {% for l in customer.loans %}
+    <tr><td><a href="{{ url_for('loans.detail', loan_id=l.id) }}">{{ l.loan_number }}</a></td>
+        <td class="num">{{ l.principal|cedi }}</td>
+        <td class="num">{{ l.total_outstanding|cedi }}</td>
+        <td><span class="badge">{{ l.status }}</span></td></tr>
+    {% else %}<tr><td colspan="4" class="note">No loans.</td></tr>{% endfor %}
+  </table>
+  <h2>Applications</h2>
+  <table>
+    <tr><th>Number</th><th class="num">Requested</th><th>Status</th><th>Date</th></tr>
+    {% for a in customer.applications %}
+    <tr><td><a href="{{ url_for('applications.detail', app_id=a.id) }}">{{ a.application_number }}</a></td>
+        <td class="num">{{ a.amount_requested|cedi }}</td>
+        <td><span class="badge">{{ a.status }}</span></td>
+        <td>{{ a.application_date|ghdate }}</td></tr>
+    {% else %}<tr><td colspan="4" class="note">No applications.</td></tr>{% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Documents</h2>
+  <form method="post" action="{{ url_for('customers.upload_document', customer_id=customer.id) }}"
+        enctype="multipart/form-data" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Document type</span>
+      <select name="document_type">{% for t in document_types %}<option>{{ t }}</option>{% endfor %}</select></label>
+    <label class="field"><span>File</span><input type="file" name="file" required></label>
+    <label class="field"><span>Expiry date (if any)</span><input type="date" name="expiry_date"></label>
+    <div class="field"><button class="btn" type="submit">Upload</button></div>
+  </form>
+  <table>
+    <tr><th>Type</th><th>File</th><th>Status</th><th>Uploaded</th><th>Expiry</th><th></th></tr>
+    {% for d in documents %}
+    <tr>
+      <td>{{ d.document_type }}</td><td>{{ d.original_filename }}</td>
+      <td><span class="badge {% if d.verification_status=='verified' %}badge-success{% elif d.verification_status=='rejected' %}badge-danger{% endif %}">{{ d.verification_status }}</span></td>
+      <td>{{ d.created_at|ghdate }} by {{ d.uploaded_by.full_name if d.uploaded_by else '—' }}</td>
+      <td>{{ d.expiry_date|ghdate if d.expiry_date else '—' }}</td>
+      <td>
+        <a href="{{ url_for('documents.download', document_id=d.id) }}">Download</a>
+        {% if d.verification_status == 'pending' and current_user.can('edit') %}
+        <form method="post" action="{{ url_for('documents.verify', document_id=d.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm" name="decision" value="verify">Verify</button>
+          <button class="btn btn-sm btn-danger" name="decision" value="reject">Reject</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="6" class="note">No documents uploaded.</td></tr>{% endfor %}
+  </table>
+</div>
+{% endblock %}

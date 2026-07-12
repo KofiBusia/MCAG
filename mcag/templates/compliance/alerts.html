@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Fraud &amp; duplicate alerts</h1>
+<p class="note">Alerts require human review. The system never automatically
+accuses or declines a customer.</p>
+<form method="get" class="inline">
+  <select name="status">
+    {% for s in ['open','under_review','cleared','confirmed'] %}
+    <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s.replace('_',' ')|title }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
+<table>
+  <tr><th>Raised</th><th>Type</th><th>Severity</th><th>Customer</th><th>Message</th><th>Status</th><th></th></tr>
+  {% for a in alerts %}
+  <tr>
+    <td>{{ a.created_at|ghdate }}</td>
+    <td>{{ C.ALERT_TYPES.get(a.alert_type, a.alert_type) }}</td>
+    <td><span class="badge {% if a.severity=='high' %}badge-danger{% elif a.severity=='medium' %}badge-warning{% endif %}">{{ a.severity }}</span></td>
+    <td>{% if a.customer %}<a href="{{ url_for('customers.detail', customer_id=a.customer_id) }}">{{ a.customer.full_name }}</a>{% else %}—{% endif %}</td>
+    <td>{{ a.message }}</td>
+    <td><span class="badge">{{ a.status }}</span></td>
+    <td>
+      {% if a.status in ('open', 'under_review') and current_user.can('compliance') %}
+      <form method="post" action="{{ url_for('compliance.alert_review', alert_id=a.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="notes" placeholder="review notes">
+        <button class="btn btn-sm" name="decision" value="cleared">Clear</button>
+        <button class="btn btn-sm btn-danger" name="decision" value="confirmed">Confirm</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% else %}<tr><td colspan="7" class="note">No alerts with this status.</td></tr>{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}
+
+{% macro text_field(name, label, value='', type='text', required=False, step=None) -%}
+<label class="field">
+  <span>{{ label }}{% if required %} *{% endif %}</span>
+  <input type="{{ type }}" name="{{ name }}" value="{{ value if value is not none else '' }}"
+         {% if required %}required{% endif %} {% if step %}step="{{ step }}"{% endif %}>
+</label>
+{%- endmacro %}
+
+{% macro select_field(name, label, options, selected='', required=False) -%}
+<label class="field">
+  <span>{{ label }}{% if required %} *{% endif %}</span>
+  <select name="{{ name }}" {% if required %}required{% endif %}>
+    <option value="">— select —</option>
+    {% for value, text in options %}
+      <option value="{{ value }}" {% if value|string == selected|string %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+</label>
+{%- endmacro %}
+
+{% macro textarea_field(name, label, value='') -%}
+<label class="field field-wide">
+  <span>{{ label }}</span>
+  <textarea name="{{ name }}" rows="3">{{ value if value is not none else '' }}</textarea>
+</label>
+{%- endmacro %}
+
+{% macro check_field(name, label, checked=False) -%}
+<label class="field-check">
+  <input type="checkbox" name="{{ name }}" value="1" {% if checked %}checked{% endif %}>
+  <span>{{ label }}</span>
+</label>
+{%- endmacro %}
+
+{% macro pagination_nav(pagination, endpoint) -%}
+{% if pagination.pages > 1 %}
+<nav class="pagination">
+  {% if pagination.has_prev %}
+    <a href="{{ url_for(endpoint, page=pagination.prev_num, **kwargs) }}">« Prev</a>
+  {% endif %}
+  <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+  {% if pagination.has_next %}
+    <a href="{{ url_for(endpoint, page=pagination.next_num, **kwargs) }}">Next »</a>
+  {% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}

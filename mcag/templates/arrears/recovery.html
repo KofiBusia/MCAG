@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Recovery</h1>
+<p class="note">Recovery uses lawful means only. There are no public borrower
+publication or shaming tools in this system.</p>
+{% if current_user.can('recovery') %}
+<div class="card">
+  <h2>Record recovery action</h2>
+  <form method="post" action="{{ url_for('arrears.record_action') }}" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Loan *</span>
+      <select name="loan_id" required>
+        {% for d in overdue %}
+        <option value="{{ d.loan.id }}">{{ d.loan.loan_number }} — {{ d.loan.customer.full_name }}
+          ({{ d.days_overdue }} days)</option>
+        {% endfor %}
+      </select></label>
+    <label class="field"><span>Action *</span>
+      <select name="action_type">{% for v, l in action_types %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></label>
+    <label class="field"><span>Date</span><input type="date" name="action_date"></label>
+    <label class="field"><span>Promised amount (GH¢)</span><input type="number" step="0.01" name="promised_amount"></label>
+    <label class="field"><span>Promise date</span><input type="date" name="promise_date"></label>
+    <label class="field field-wide"><span>Notes</span><textarea name="notes" rows="2"></textarea></label>
+    <label class="field"><span>Outcome</span><input name="outcome"></label>
+    <div class="field"><button class="btn" type="submit">Record action</button></div>
+  </form>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Recent recovery actions</h2>
+  <table>
+    <tr><th>Date</th><th>Loan</th><th>Action</th><th>Officer</th>
+        <th class="num">Promised</th><th>Promise date</th><th>Outcome</th></tr>
+    {% for a in actions %}
+    <tr>
+      <td>{{ a.action_date|ghdate }}</td>
+      <td><a href="{{ url_for('loans.detail', loan_id=a.loan_id) }}">{{ a.loan.loan_number }}</a></td>
+      <td>{{ a.action_type.replace('_',' ')|title }}</td>
+      <td>{{ a.officer.full_name }}</td>
+      <td class="num">{{ a.promised_amount|cedi if a.promised_amount else '—' }}</td>
+      <td>{{ a.promise_date|ghdate if a.promise_date else '—' }}</td>
+      <td>{{ a.outcome or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Loan {{ loan.loan_number }} <span class="badge">{{ loan.status }}</span></h1>
+<p>
+  <a class="btn btn-secondary" href="{{ url_for('loans.ledger', loan_id=loan.id) }}">Ledger</a>
+  <a class="btn btn-secondary" href="{{ url_for('loans.statement_pdf', loan_id=loan.id) }}">Statement (PDF)</a>
+  <a class="btn btn-secondary" href="{{ url_for('loans.settlement', loan_id=loan.id) }}">Early settlement</a>
+  {% if current_user.can('restructure') %}
+  <a class="btn btn-secondary" href="{{ url_for('loans.restructure', loan_id=loan.id) }}">Restructure</a>
+  {% endif %}
+  {% if loan.status == 'Closed' %}
+  <a class="btn btn-secondary" href="{{ url_for('loans.closure_pack', loan_id=loan.id) }}">Closure pack (PDF)</a>
+  {% endif %}
+  {% if loan.days_overdue() > 0 %}
+  <a class="btn btn-warning" href="{{ url_for('arrears.letter_pdf', loan_id=loan.id, letter='reminder') }}">Reminder letter</a>
+  {% endif %}
+</p>
+<div class="stats">
+  <div class="stat"><div class="label">Principal</div><div class="value">{{ loan.principal|cedi }}</div></div>
+  <div class="stat"><div class="label">Total interest</div><div class="value">{{ loan.total_interest|cedi }}</div></div>
+  <div class="stat"><div class="label">Total repayment</div><div class="value">{{ loan.total_repayment|cedi }}</div></div>
+  <div class="stat"><div class="label">APR</div><div class="value">{{ loan.apr }}%</div></div>
+  <div class="stat"><div class="label">Principal outstanding</div><div class="value">{{ loan.principal_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Interest outstanding</div><div class="value">{{ loan.interest_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Penalties outstanding</div><div class="value">{{ loan.penalties_outstanding|cedi }}</div></div>
+  <div class="stat"><div class="label">Days overdue</div><div class="value">{{ loan.days_overdue() }}</div></div>
+</div>
+
+<div class="card">
+  <h2>Repayment schedule</h2>
+  <table>
+    <tr><th>#</th><th>Due date</th><th class="num">Opening</th><th class="num">Principal</th>
+        <th class="num">Interest</th><th class="num">Penalties</th><th class="num">Total due</th>
+        <th class="num">Paid</th><th class="num">Days overdue</th><th class="num">Closing</th><th>Status</th>
+        {% if current_user.can('edit') %}<th></th>{% endif %}</tr>
+    {% for i in loan.instalments %}
+    <tr>
+      <td>{{ i.number }}</td><td>{{ i.due_date|ghdate }}</td>
+      <td class="num">{{ i.opening_principal|cedi }}</td>
+      <td class="num">{{ i.principal_due|cedi }}</td>
+      <td class="num">{{ i.interest_due|cedi }}</td>
+      <td class="num">{{ i.penalties_due|cedi }}</td>
+      <td class="num">{{ i.total_due|cedi }}</td>
+      <td class="num">{{ i.amount_paid|cedi }}</td>
+      <td class="num">{{ i.days_overdue() }}</td>
+      <td class="num">{{ i.closing_principal|cedi }}</td>
+      <td><span class="badge {% if i.status=='Paid' %}badge-success{% elif i.status=='Overdue' %}badge-danger{% endif %}">{{ i.status }}</span></td>
+      {% if current_user.can('edit') %}
+      <td>{% if i.days_overdue() > 0 %}
+        <form method="post" action="{{ url_for('arrears.penalty', loan_id=loan.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="instalment_number" value="{{ i.number }}">
+          <button class="btn btn-sm btn-warning">Apply penalty</button>
+        </form>{% endif %}</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Repayments</h2>
+    <table>
+      <tr><th>Receipt</th><th>Date</th><th class="num">Amount</th><th>Method</th><th></th></tr>
+      {% for r in loan.repayments %}
+      <tr {% if r.reversed %}style="text-decoration:line-through"{% endif %}>
+        <td><a href="{{ url_for('collections.receipt', repayment_id=r.id) }}">{{ r.receipt_number }}</a></td>
+        <td>{{ r.paid_at|ghdate }}</td><td class="num">{{ r.amount|cedi }}</td><td>{{ r.method }}</td>
+        <td>{% if r.reversed %}<span class="badge badge-danger">reversed</span>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="5" class="note">No repayments.</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="card">
+    <h2>Waivers &amp; write-off (maker-checker)</h2>
+    {% if current_user.can('waive_charges') %}
+    <form method="post" action="{{ url_for('loans.request_waiver', loan_id=loan.id) }}" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Type</span>
+        <select name="waiver_type"><option value="penalty">Penalty</option><option value="interest">Interest</option></select></label>
+      <label class="field"><span>Amount (GH¢)</span><input type="number" step="0.01" name="amount"></label>
+      <label class="field field-wide"><span>Reason</span><input name="reason"></label>
+      <div class="field"><button class="btn btn-sm" type="submit">Request waiver</button></div>
+    </form>
+    {% endif %}
+    <table>
+      <tr><th>Type</th><th class="num">Amount</th><th>Status</th><th>Requested by</th><th></th></tr>
+      {% for w in loan.waivers %}
+      <tr><td>{{ w.waiver_type }}</td><td class="num">{{ w.amount|cedi }}</td>
+          <td><span class="badge">{{ w.status }}</span></td>
+          <td>{{ w.requested_by.full_name }}</td>
+          <td>{% if w.status == 'pending' and current_user.can('waive_charges') and w.requested_by_id != current_user.id %}
+            <form method="post" action="{{ url_for('loans.approve_waiver_route', waiver_id=w.id) }}" class="inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm" name="decision" value="approve">Approve</button>
+              <button class="btn btn-sm btn-danger" name="decision" value="reject">Reject</button>
+            </form>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="5" class="note">No waivers.</td></tr>{% endfor %}
+    </table>
+    {% if current_user.can('write_off') and loan.status not in ('Written Off', 'Closed') %}
+    <hr>
+    <form method="post" action="{{ url_for('loans.write_off', loan_id=loan.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if loan.write_off_requested_by_id %}
+      <p class="note">Write-off requested: {{ loan.write_off_reason }}</p>
+      <button class="btn btn-danger" name="action" value="approve">Approve write-off</button>
+      {% else %}
+      <label class="field"><span>Write-off reason</span><input name="reason"></label>
+      <button class="btn btn-warning" name="action" value="request">Request write-off</button>
+      {% endif %}
+    </form>
+    {% endif %}
+    {% if loan.status == 'Written Off' and current_user.can('recovery') %}
+    <hr>
+    <h3>Record recovery after write-off</h3>
+    <form method="post" action="{{ url_for('arrears.recovery_payment', loan_id=loan.id) }}" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="field"><span>Amount (GH¢)</span><input type="number" step="0.01" name="amount"></label>
+      <label class="field"><span>Date</span><input type="date" name="paid_at"></label>
+      <label class="field"><span>Method</span>
+        <select name="method"><option value="cash">Cash</option><option value="mobile_money">Mobile money</option>
+          <option value="bank_transfer">Bank transfer</option></select></label>
+      <div class="field"><button class="btn btn-sm" type="submit">Record recovery</button></div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

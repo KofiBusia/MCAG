@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Income statement {{ from_date|ghdate }} – {{ to_date|ghdate }}</h1>
+<form method="get" class="inline">
+  <input type="date" name="from" value="{{ from_date }}">
+  <input type="date" name="to" value="{{ to_date }}">
+  <button class="btn btn-sm">Update</button>
+</form>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Income</h2>
+    <table>
+      {% for r in data.income %}<tr><td>{{ r.account.name }}</td><td class="num">{{ r.amount|cedi }}</td></tr>{% endfor %}
+      <tr><th>Total income</th><th class="num">{{ data.total_income|cedi }}</th></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Expenses</h2>
+    <table>
+      {% for r in data.expenses %}<tr><td>{{ r.account.name }}</td><td class="num">{{ r.amount|cedi }}</td></tr>{% endfor %}
+      <tr><th>Total expenses</th><th class="num">{{ data.total_expenses|cedi }}</th></tr>
+    </table>
+  </div>
+</div>
+<div class="card"><h2>Net profit / (loss): {{ data.net_profit|cedi }}</h2></div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Data protection</h1>
+<p class="note">Ghana Card numbers are masked throughout the interface. Access,
+exports and downloads are logged. Customers may request access to or
+correction of their data under the Data Protection Act 2012 (Act 843).</p>
+{% if current_user.can('compliance') %}
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Record data subject request</h2>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="record_kind" value="request">
+      <label class="field"><span>Customer</span>
+        <select name="customer_id"><option value="">—</option>
+          {% for c in customers %}<option value="{{ c.id }}">{{ c.customer_number }} — {{ c.full_name }}</option>{% endfor %}
+        </select></label>
+      <label class="field"><span>Type</span>
+        <select name="request_type"><option value="access">Access</option>
+          <option value="correction">Correction</option><option value="deletion">Deletion</option></select></label>
+      <label class="field field-wide"><span>Details *</span><textarea name="details" rows="2" required></textarea></label>
+      <div class="field"><button class="btn" type="submit">Record request</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Record data breach</h2>
+    <form method="post" class="grid-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="record_kind" value="breach">
+      <label class="field"><span>Occurred on</span><input type="date" name="occurred_on"></label>
+      <label class="field"><span>Discovered on</span><input type="date" name="discovered_on"></label>
+      <label class="field field-wide"><span>Description *</span><textarea name="details" rows="2" required></textarea></label>
+      <label class="field"><span>Data affected</span><input name="data_affected"></label>
+      <label class="field"><span>Persons affected</span><input type="number" name="persons_affected"></label>
+      <label class="field field-wide"><span>Containment actions</span><input name="containment_actions"></label>
+      <label class="field-check"><input type="checkbox" name="reported_to_dpc" value="1"><span>Reported to Data Protection Commission</span></label>
+      <div class="field"><button class="btn btn-danger" type="submit">Record breach</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Data subject requests</h2>
+  <table>
+    <tr><th>Date</th><th>Customer</th><th>Type</th><th>Details</th><th>Status</th></tr>
+    {% for r in requests %}
+    <tr><td>{{ r.created_at|ghdate }}</td><td>{{ r.customer.full_name if r.customer else '—' }}</td>
+        <td>{{ r.request_type }}</td><td>{{ r.details }}</td><td><span class="badge">{{ r.status }}</span></td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Data breach register</h2>
+  <table>
+    <tr><th>Occurred</th><th>Discovered</th><th>Description</th><th>Persons</th><th>DPC reported</th><th>Status</th></tr>
+    {% for b in breaches %}
+    <tr><td>{{ b.occurred_on|ghdate }}</td><td>{{ b.discovered_on|ghdate }}</td>
+        <td>{{ b.description }}</td><td>{{ b.persons_affected or '—' }}</td>
+        <td>{{ 'Yes' if b.reported_to_dpc else 'No' }}</td><td><span class="badge">{{ b.status }}</span></td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h2>Consent records</h2>
+  <table>
+    <tr><th>Date</th><th>Customer</th><th>Consent type</th><th>Given</th></tr>
+    {% for c in consents %}
+    <tr><td>{{ c.created_at|ghdate }}</td><td>{{ c.customer.full_name }}</td>
+        <td>{{ c.consent_type.replace('_',' ') }}</td><td>{{ 'Yes' if c.given else 'No' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

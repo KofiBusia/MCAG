@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_nav %}
+{% block content %}
+<h1>Receipt register</h1>
+<p class="note">Issued receipts are never deleted. Reversals are controlled,
+reasoned and approved, and reversed receipts remain marked on the register.</p>
+<table>
+  <tr><th>Receipt</th><th>Loan</th><th>Customer</th><th class="num">Amount</th>
+      <th>Date</th><th>Method</th><th>Collector</th><th>Status</th></tr>
+  {% for r in pagination.items %}
+  <tr {% if r.reversed %}style="opacity:.6"{% endif %}>
+    <td><a href="{{ url_for('collections.receipt', repayment_id=r.id) }}">{{ r.receipt_number }}</a></td>
+    <td>{{ r.loan.loan_number }}</td>
+    <td>{{ r.loan.customer.full_name }}</td>
+    <td class="num">{{ r.amount|cedi }}</td>
+    <td>{{ r.paid_at|ghdate }}</td>
+    <td>{{ r.method }}</td>
+    <td>{{ r.collector.full_name }}</td>
+    <td>{% if r.reversed %}<span class="badge badge-danger">reversed</span>
+        {% else %}<span class="badge badge-success">valid</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table>
+{{ pagination_nav(pagination, 'collections.receipts') }}
+{% endblock %}

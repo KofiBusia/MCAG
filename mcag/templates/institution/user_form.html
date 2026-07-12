@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Add staff user</h1>
+<div class="card">
+  <form method="post" class="grid-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="field"><span>Full name *</span><input name="full_name" required></label>
+    <label class="field"><span>Email *</span><input type="email" name="email" required></label>
+    <label class="field"><span>Phone</span><input name="phone"></label>
+    <label class="field"><span>Role *</span>
+      <select name="role" required>
+        {% for value, label in roles %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Loan approval limit (GH¢, optional)</span>
+      <input type="number" step="0.01" name="approval_limit"></label>
+    <label class="field"><span>Temporary password *</span><input type="password" name="password" required></label>
+    <div class="field-wide"><button class="btn" type="submit">Create user</button></div>
+  </form>
+</div>
+{% endblock %}
